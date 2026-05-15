@@ -10,4 +10,4 @@ db = SQLAlchemy(app)
 with app.app_context():
     appbuilder = AppBuilder(app, db.session)
 
-from app import views
+    from app import views
