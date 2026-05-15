@@ -24,7 +24,7 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
 from flask_appbuilder.filemanager import ImageManager
 from markupsafe import Markup
-from .models import Producto, Categoria
+from .models import Producto, Categoria, Cliente, Pedido, PedidoItem
 
 class CategoriaModelView(ModelView):
     datamodel = SQLAInterface(Categoria)
@@ -87,4 +87,76 @@ appbuilder.add_view(
     icon="fa-coffee",
     category="Catálogo",
     category_icon="fa-coffee"
+)
+
+
+from flask_appbuilder import ModelView
+from flask_appbuilder.models.sqla.interface import SQLAInterface
+
+
+class ClienteModelView(ModelView):
+    datamodel = SQLAInterface(Cliente)
+    label_columns = {
+        'nombre': 'Nombre',
+        'email': 'Email',
+        'telefono': 'Teléfono',
+        'direccion': 'Dirección',
+        'creado_en': 'Creado en'
+    }
+    list_columns = ['nombre', 'email', 'telefono', 'creado_en']
+    add_columns = ['nombre', 'email', 'telefono', 'direccion']
+    edit_columns = add_columns
+
+
+class PedidoModelView(ModelView):
+    datamodel = SQLAInterface(Pedido)
+    label_columns = {
+        'cliente': 'Cliente',
+        'total': 'Total',
+        'estado': 'Estado',
+        'creado_en': 'Creado en',
+        'entregado_en': 'Entregado en'
+    }
+    list_columns = ['id', 'cliente', 'total', 'estado', 'creado_en']
+    add_columns = ['cliente', 'estado']
+    edit_columns = ['cliente', 'estado', 'entregado_en']
+    show_columns = ['id', 'cliente', 'total', 'estado', 'creado_en', 'entregado_en']
+
+
+class PedidoItemModelView(ModelView):
+    datamodel = SQLAInterface(PedidoItem)
+    label_columns = {
+        'pedido': 'Pedido',
+        'producto': 'Producto',
+        'cantidad': 'Cantidad',
+        'precio_unitario': 'Precio unitario',
+        'subtotal': 'Subtotal'
+    }
+    list_columns = ['pedido', 'producto', 'cantidad', 'precio_unitario', 'subtotal']
+    add_columns = ['pedido', 'producto', 'cantidad', 'precio_unitario', 'subtotal']
+    edit_columns = add_columns
+
+
+appbuilder.add_view(
+    ClienteModelView,
+    "Clientes",
+    icon="fa-users",
+    category="Ventas",
+    category_icon="fa-shopping-cart"
+)
+
+appbuilder.add_view(
+    PedidoModelView,
+    "Pedidos",
+    icon="fa-list-alt",
+    category="Ventas",
+    category_icon="fa-shopping-cart"
+)
+
+appbuilder.add_view(
+    PedidoItemModelView,
+    "Líneas de Pedido",
+    icon="fa-receipt",
+    category="Ventas",
+    category_icon="fa-shopping-cart"
 )
