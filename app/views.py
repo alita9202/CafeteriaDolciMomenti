@@ -160,3 +160,121 @@ appbuilder.add_view(
     category="Ventas",
     category_icon="fa-shopping-cart"
 )
+
+# -----------------------------
+# REPORTES
+# -----------------------------
+from sqlalchemy import func
+from .extensions import db
+
+
+class ReporteView(BaseView):
+    route_base = "/reportes"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        # Conteos
+        total_productos = db.session.query(Producto).count()
+        total_clientes = db.session.query(Cliente).count()
+        total_pedidos = db.session.query(Pedido).count()
+
+        # Sumatoria
+        total_vendido = db.session.query(
+            func.coalesce(func.sum(Pedido.total), 0)
+        ).scalar()
+
+        # Agrupación: pedidos por estado
+        pedidos_por_estado = db.session.query(
+            Pedido.estado,
+            func.count(Pedido.id)
+        ).group_by(Pedido.estado).all()
+
+        # Agrupación: productos más vendidos
+        productos_mas_vendidos = db.session.query(
+            Producto.nombre,
+            func.coalesce(func.sum(PedidoItem.cantidad), 0)
+        ).join(
+            PedidoItem,
+            PedidoItem.producto_id == Producto.id
+        ).group_by(
+            Producto.id,
+            Producto.nombre
+        ).all()
+
+        etiquetas_productos = [item[0] for item in productos_mas_vendidos]
+        cantidades_productos = [int(item[1]) for item in productos_mas_vendidos]
+
+        return self.render_template(
+            "reportes.html",
+            title="Reportes",
+            total_productos=total_productos,
+            total_clientes=total_clientes,
+            total_pedidos=total_pedidos,
+            total_vendido=total_vendido,
+            pedidos_por_estado=pedidos_por_estado,
+            productos_mas_vendidos=productos_mas_vendidos,
+            etiquetas_productos=etiquetas_productos,
+            cantidades_productos=cantidades_productos
+        )
+
+
+appbuilder.add_view_no_menu(ReporteView())
+
+appbuilder.add_link(
+    "Reportes",
+    href="/reportes/",
+    icon="fa-bar-chart",
+    category="Reportes",
+    category_icon="fa-bar-chart"
+)
+
+class GraficasView(BaseView):
+    route_base = "/graficas"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        # Gráfica 1: Productos más vendidos
+        productos_mas_vendidos = db.session.query(
+            Producto.nombre,
+            func.coalesce(func.sum(PedidoItem.cantidad), 0)
+        ).join(
+            PedidoItem,
+            PedidoItem.producto_id == Producto.id
+        ).group_by(
+            Producto.id,
+            Producto.nombre
+        ).all()
+
+        etiquetas_productos = [item[0] for item in productos_mas_vendidos]
+        cantidades_productos = [int(item[1]) for item in productos_mas_vendidos]
+
+        # Gráfica 2: Pedidos por estado
+        pedidos_por_estado = db.session.query(
+            Pedido.estado,
+            func.count(Pedido.id)
+        ).group_by(Pedido.estado).all()
+
+        etiquetas_estados = [item[0] for item in pedidos_por_estado]
+        cantidades_estados = [int(item[1]) for item in pedidos_por_estado]
+
+        return self.render_template(
+            "graficas.html",
+            title="Gráficas",
+            etiquetas_productos=etiquetas_productos,
+            cantidades_productos=cantidades_productos,
+            etiquetas_estados=etiquetas_estados,
+            cantidades_estados=cantidades_estados
+        )
+
+
+appbuilder.add_view_no_menu(GraficasView())
+
+appbuilder.add_link(
+    "Gráficas",
+    href="/graficas/",
+    icon="fa-pie-chart",
+    category="Reportes",
+    category_icon="fa-bar-chart"
+)
