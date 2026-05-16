@@ -1,0 +1,79 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gráficas DOLCIMOMENTI</h2>
+    <p>Visualización gráfica de la información registrada en el sistema.</p>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Productos más vendidos
+                </div>
+                <div class="panel-body">
+                    <canvas id="graficaProductos"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    Pedidos por estado
+                </div>
+                <div class="panel-body">
+                    <canvas id="graficaEstados"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const etiquetasProductos = {{ etiquetas_productos | tojson }};
+    const cantidadesProductos = {{ cantidades_productos | tojson }};
+
+    const etiquetasEstados = {{ etiquetas_estados | tojson }};
+    const cantidadesEstados = {{ cantidades_estados | tojson }};
+
+    const ctxProductos = document.getElementById('graficaProductos').getContext('2d');
+
+    new Chart(ctxProductos, {
+        type: 'bar',
+        data: {
+            labels: etiquetasProductos,
+            datasets: [{
+                label: 'Cantidad vendida',
+                data: cantidadesProductos
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    const ctxEstados = document.getElementById('graficaEstados').getContext('2d');
+
+    new Chart(ctxEstados, {
+        type: 'pie',
+        data: {
+            labels: etiquetasEstados,
+            datasets: [{
+                label: 'Pedidos por estado',
+                data: cantidadesEstados
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+{% endblock %}
