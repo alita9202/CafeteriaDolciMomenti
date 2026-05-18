@@ -24,7 +24,7 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
 from flask_appbuilder.filemanager import ImageManager
 from markupsafe import Markup
-from .models import Producto, Categoria, Cliente, Pedido, PedidoItem
+from .models import Producto, Categoria, Cliente, Pedido, PedidoItem, Pago
 
 class CategoriaModelView(ModelView):
     datamodel = SQLAInterface(Categoria)
@@ -136,6 +136,76 @@ class PedidoItemModelView(ModelView):
     add_columns = ['pedido', 'producto', 'cantidad', 'precio_unitario', 'subtotal']
     edit_columns = add_columns
 
+    def on_model_change(self, form, model, is_created):
+        # Asegurar precio_unitario y subtotal coherentes
+        from .extensions import db
+        if not model.precio_unitario and model.producto:
+            model.precio_unitario = model.producto.precio
+        model.subtotal = (model.precio_unitario or 0) * (model.cantidad or 0)
+
+        # Persistir temporalmente y recalcular total del pedido desde la DB
+        db.session.add(model)
+        db.session.flush()
+        pedido = model.pedido
+        if pedido:
+            total = db.session.query(func.coalesce(func.sum(PedidoItem.subtotal), 0)).filter(PedidoItem.pedido_id == pedido.id).scalar()
+            pedido.total = total or 0
+            db.session.add(pedido)
+
+    def on_model_delete(self, model):
+        # Recalcular total del pedido excluyendo la línea que se borrará
+        from .extensions import db
+        pedido = model.pedido
+        if pedido:
+            total_excl = db.session.query(func.coalesce(func.sum(PedidoItem.subtotal), 0)).filter(
+                PedidoItem.pedido_id == pedido.id,
+                PedidoItem.id != model.id
+            ).scalar()
+            pedido.total = total_excl or 0
+            db.session.add(pedido)
+
+
+class PagoModelView(ModelView):
+    datamodel = SQLAInterface(Pago)
+    label_columns = {
+        'pedido': 'Pedido',
+        'monto': 'Monto',
+        'metodo': 'Método',
+        'estado': 'Estado',
+        'referencia_transaccion': 'Referencia',
+        'fecha': 'Fecha'
+    }
+    list_columns = ['pedido', 'monto', 'metodo', 'estado', 'fecha']
+    add_columns = ['pedido', 'monto', 'metodo', 'estado', 'referencia_transaccion']
+    edit_columns = add_columns
+    show_columns = ['pedido', 'monto', 'metodo', 'estado', 'referencia_transaccion', 'fecha']
+
+    def on_model_change(self, form, model, is_created):
+        # Si el pago queda completado, marcar pedido y ajustar stock
+        from .extensions import db
+        # Autocompletar monto si no fue informado
+        if model.pedido and (not model.monto or float(model.monto) == 0):
+            model.monto = model.pedido.total
+
+        prev_estado = None
+        if not is_created and model.id:
+            prev = db.session.query(Pago).get(model.id)
+            if prev:
+                prev_estado = (prev.estado or '').lower()
+
+        new_estado = (model.estado or '').lower()
+        if new_estado in ('completado', 'pagado') and prev_estado not in ('completado', 'pagado'):
+            pedido = model.pedido
+            if pedido:
+                pedido.estado = 'pagado'
+                # Reducir stock por cada item
+                for item in pedido.items:
+                    if item.producto and item.cantidad:
+                        item.producto.stock = max(0, (item.producto.stock or 0) - item.cantidad)
+                        db.session.add(item.producto)
+                db.session.add(pedido)
+        db.session.add(model)
+
 
 appbuilder.add_view(
     ClienteModelView,
@@ -161,6 +231,14 @@ appbuilder.add_view(
     category_icon="fa-shopping-cart"
 )
 
+appbuilder.add_view(
+    PagoModelView,
+    "Pagos",
+    icon="fa-credit-card",
+    category="Ventas",
+    category_icon="fa-shopping-cart"
+)
+
 # -----------------------------
 # REPORTES
 # -----------------------------
@@ -179,10 +257,10 @@ class ReporteView(BaseView):
         total_clientes = db.session.query(Cliente).count()
         total_pedidos = db.session.query(Pedido).count()
 
-        # Sumatoria
+        # Sumatoria: usar pagos completados para reflejar ventas reales (case-insensitive)
         total_vendido = db.session.query(
-            func.coalesce(func.sum(Pedido.total), 0)
-        ).scalar()
+            func.coalesce(func.sum(Pago.monto), 0)
+        ).filter(func.lower(Pago.estado).in_(['completado', 'pagado'])).scalar()
 
         # Agrupación: pedidos por estado
         pedidos_por_estado = db.session.query(
@@ -197,6 +275,11 @@ class ReporteView(BaseView):
         ).join(
             PedidoItem,
             PedidoItem.producto_id == Producto.id
+        ).join(
+            Pedido,
+            PedidoItem.pedido_id == Pedido.id
+        ).filter(
+            func.lower(Pedido.estado).in_(['pagado', 'entregado'])
         ).group_by(
             Producto.id,
             Producto.nombre
@@ -242,6 +325,11 @@ class GraficasView(BaseView):
         ).join(
             PedidoItem,
             PedidoItem.producto_id == Producto.id
+        ).join(
+            Pedido,
+            PedidoItem.pedido_id == Pedido.id
+        ).filter(
+            Pedido.estado.in_(['pagado', 'entregado'])
         ).group_by(
             Producto.id,
             Producto.nombre

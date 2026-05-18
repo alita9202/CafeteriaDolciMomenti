@@ -96,6 +96,12 @@ class Pedido(Model):
         cascade="all, delete-orphan"
     )
 
+    pagos = relationship(
+        "Pago",
+        back_populates="pedido",
+        cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"Pedido #{self.id} - {self.cliente.nombre if self.cliente else 'Cliente N/A'}"
 
@@ -122,3 +128,23 @@ class PedidoItem(Model):
 
     def __repr__(self):
         return f"{self.cantidad} x {self.producto.nombre if self.producto else ''}"
+
+
+class Pago(Model):
+    __tablename__ = "pago"
+
+    id = Column(Integer, primary_key=True)
+    pedido_id = Column(Integer, ForeignKey("pedido.id"), nullable=False)
+    monto = Column(Numeric(10, 2), nullable=False)
+    metodo = Column(String(50), nullable=False)
+    estado = Column(String(50), nullable=False, default="pendiente")
+    referencia_transaccion = Column(String(255), nullable=True)
+    fecha = Column(DateTime, default=datetime.now, nullable=False)
+
+    pedido = relationship(
+        "Pedido",
+        back_populates="pagos"
+    )
+
+    def __repr__(self):
+        return f"Pago #{self.id} - {self.monto} ({self.metodo})"

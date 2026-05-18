@@ -1,79 +1,157 @@
-{% extends "appbuilder/base.html" %}
-
-{% block content %}
+{% extends "appbuilder/base.html" %} {% block head_css %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_ux.css') }}"
+/>
+{% endblock %} {% block content %}
 <div class="container mt-4">
-    <h2>Gráficas DOLCIMOMENTI</h2>
-    <p>Visualización gráfica de la información registrada en el sistema.</p>
-
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    Productos más vendidos
-                </div>
-                <div class="panel-body">
-                    <canvas id="graficaProductos"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    Pedidos por estado
-                </div>
-                <div class="panel-body">
-                    <canvas id="graficaEstados"></canvas>
-                </div>
-            </div>
-        </div>
+  <div class="ux-toolbar">
+    <div>
+      <h2 style="margin: 0; color: #5f3920">Gráficas DOLCIMOMENTI</h2>
+      <p style="margin: 6px 0 0; color: #8d6c56">
+        Visualización clara del comportamiento comercial del sistema.
+      </p>
     </div>
+    <div style="margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap">
+      <input
+        type="date"
+        id="fechaDesde"
+        class="form-control"
+        value="{{ desde or '' }}"
+      />
+      <input
+        type="date"
+        id="fechaHasta"
+        class="form-control"
+        value="{{ hasta or '' }}"
+      />
+      <button id="btnAplicarGraficas" class="btn btn-primary">Aplicar</button>
+      <button id="btnResetGraficas" class="btn btn-default">Limpiar</button>
+    </div>
+  </div>
+
+  <div id="chartLoader" class="ux-loader">Actualizando gráficas...</div>
+
+  <div class="row mt-4">
+    <div class="col-md-7">
+      <div class="ux-chart-card">
+        <h3 style="margin-top: 0; color: #5f3920">Productos más vendidos</h3>
+        <div class="ux-chart-wrap">
+          <canvas id="graficaProductos"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="ux-chart-card">
+        <h3 style="margin-top: 0; color: #5f3920">Pedidos por estado</h3>
+        <div class="ux-chart-wrap">
+          <canvas id="graficaEstados"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const etiquetasProductos = {{ etiquetas_productos | tojson }};
-    const cantidadesProductos = {{ cantidades_productos | tojson }};
+  const etiquetasProductos = {{ etiquetas_productos | tojson }};
+  const cantidadesProductos = {{ cantidades_productos | tojson }};
+  const etiquetasEstados = {{ etiquetas_estados | tojson }};
+  const cantidadesEstados = {{ cantidades_estados | tojson }};
 
-    const etiquetasEstados = {{ etiquetas_estados | tojson }};
-    const cantidadesEstados = {{ cantidades_estados | tojson }};
+  function agruparEstados(labels, values) {
+      const grouped = {};
+      labels.forEach((label, index) => {
+          const key = String(label || 'pendiente').trim().toLowerCase();
+          grouped[key] = (grouped[key] || 0) + Number(values[index] || 0);
+      });
+      return {
+          labels: Object.keys(grouped).map(key => key.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())),
+          values: Object.values(grouped)
+      };
+  }
 
-    const ctxProductos = document.getElementById('graficaProductos').getContext('2d');
+  const estadosNormalizados = agruparEstados(etiquetasEstados, cantidadesEstados);
+  const hasProductos = etiquetasProductos.length > 0;
+  const hasEstados = estadosNormalizados.labels.length > 0;
 
-    new Chart(ctxProductos, {
-        type: 'bar',
-        data: {
-            labels: etiquetasProductos,
-            datasets: [{
-                label: 'Cantidad vendida',
-                data: cantidadesProductos
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+  if (!hasProductos) {
+      document.getElementById('graficaProductos').parentElement.innerHTML = '<div class="ux-empty-state">No hay ventas confirmadas para graficar productos.</div>';
+  } else {
+      new Chart(document.getElementById('graficaProductos').getContext('2d'), {
+          type: 'bar',
+          data: {
+              labels: etiquetasProductos,
+              datasets: [{
+                  label: 'Cantidad vendida',
+                  data: cantidadesProductos,
+                  backgroundColor: '#c96f3b',
+                  borderRadius: 10,
+                  maxBarThickness: 40
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                      callbacks: {
+                          label: (ctx) => ` ${ctx.raw} unidades`
+                      }
+                  }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      ticks: { precision: 0 }
+                  }
+              }
+          }
+      });
+  }
 
-    const ctxEstados = document.getElementById('graficaEstados').getContext('2d');
+  if (!hasEstados) {
+      document.getElementById('graficaEstados').parentElement.innerHTML = '<div class="ux-empty-state">No hay pedidos en el rango seleccionado.</div>';
+  } else {
+      new Chart(document.getElementById('graficaEstados').getContext('2d'), {
+          type: 'doughnut',
+          data: {
+              labels: estadosNormalizados.labels,
+              datasets: [{
+                  label: 'Pedidos por estado',
+                  data: estadosNormalizados.values,
+                  backgroundColor: ['#f0ad4e', '#5bc0de', '#5cb85c', '#d9534f', '#8e6bbd', '#c96f3b']
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  tooltip: {
+                      callbacks: {
+                          label: (ctx) => ` ${ctx.label}: ${ctx.raw} pedidos`
+                      }
+                  }
+              }
+          }
+      });
+  }
 
-    new Chart(ctxEstados, {
-        type: 'pie',
-        data: {
-            labels: etiquetasEstados,
-            datasets: [{
-                label: 'Pedidos por estado',
-                data: cantidadesEstados
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+  const chartLoader = document.getElementById('chartLoader');
+  document.getElementById('btnAplicarGraficas')?.addEventListener('click', function () {
+      chartLoader.style.display = 'block';
+      const url = new URL(window.location.href);
+      url.searchParams.set('desde', document.getElementById('fechaDesde').value || '');
+      url.searchParams.set('hasta', document.getElementById('fechaHasta').value || '');
+      window.location.href = url.toString();
+  });
+
+  document.getElementById('btnResetGraficas')?.addEventListener('click', function () {
+      chartLoader.style.display = 'block';
+      window.location.href = window.location.pathname;
+  });
 </script>
 {% endblock %}
