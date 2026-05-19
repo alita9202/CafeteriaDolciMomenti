@@ -1,0 +1,53 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container mt-4" id="factura">
+    <div class="text-center">
+        <h2>DOLCIMOMENTI</h2>
+        <h4>Heladería - Cafetería</h4>
+        <p>Factura</p>
+    </div>
+
+    <hr>
+
+    <p><strong>Factura N°:</strong> {{ factura.id }}</p>
+    <p><strong>Fecha:</strong> {{ factura.fecha }}</p>
+    <p><strong>Cliente:</strong> {{ factura.cliente.nombre if factura.cliente else '' }}</p>
+    <p><strong>NIT:</strong> {{ factura.nit }}</p>
+    <p><strong>Razón social:</strong> {{ factura.razon_social }}</p>
+    <p><strong>Pedido:</strong> {{ factura.pedido }}</p>
+
+    <hr>
+
+    <h4>Detalle</h4>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in factura.pedido.items %}
+            <tr>
+                <td>{{ item.producto.nombre if item.producto else '' }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.precio_unitario }} Bs</td>
+                <td>{{ item.subtotal }} Bs</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 class="text-right">Total: {{ factura.monto_total }} Bs</h3>
+
+    <br>
+
+    <button class="btn btn-primary" onclick="window.print()">
+        Imprimir factura
+    </button>
+</div>
+{% endblock %}

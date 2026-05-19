@@ -24,7 +24,11 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
 from flask_appbuilder.filemanager import ImageManager
 from markupsafe import Markup
-from .models import Producto, Categoria, Cliente, Pedido, PedidoItem, Pago
+from decimal import Decimal
+from datetime import datetime
+from flask import redirect, url_for
+from wtforms import SelectField
+from .models import Producto, Categoria, Cliente, Pedido, PedidoItem, Pago, Factura
 
 class CategoriaModelView(ModelView):
     datamodel = SQLAInterface(Categoria)
@@ -97,31 +101,101 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 class ClienteModelView(ModelView):
     datamodel = SQLAInterface(Cliente)
     label_columns = {
-        'nombre': 'Nombre',
-        'email': 'Email',
-        'telefono': 'Teléfono',
-        'direccion': 'Dirección',
-        'creado_en': 'Creado en'
+        "nombre": "Nombre",
+        "email": "Email",
+        "telefono": "Teléfono",
+        "direccion": "Dirección",
+        "requiere_factura": "¿Requiere factura?",
+        "nit": "NIT",
+        "razon_social": "Razón social",
+        "creado_en": "Creado en"
     }
-    list_columns = ['nombre', 'email', 'telefono', 'creado_en']
-    add_columns = ['nombre', 'email', 'telefono', 'direccion']
+
+    list_columns = [
+        "nombre",
+        "email",
+        "telefono",
+        "requiere_factura",
+        "nit",
+        "razon_social",
+        "creado_en"
+    ]
+
+    add_columns = [
+        "nombre",
+        "email",
+        "telefono",
+        "direccion",
+        "requiere_factura",
+        "nit",
+        "razon_social"
+    ]
+
     edit_columns = add_columns
+
+    show_columns = [
+        "nombre",
+        "email",
+        "telefono",
+        "direccion",
+        "requiere_factura",
+        "nit",
+        "razon_social",
+        "creado_en"
+    ]
 
 
 class PedidoModelView(ModelView):
     datamodel = SQLAInterface(Pedido)
-    label_columns = {
-        'cliente': 'Cliente',
-        'total': 'Total',
-        'estado': 'Estado',
-        'creado_en': 'Creado en',
-        'entregado_en': 'Entregado en'
+    form_extra_fields = {
+        "estado": SelectField(
+            "Estado",
+            choices=[
+                ("pendiente", "Pendiente"),
+                ("entregado", "Entregado"),
+                ("cancelado", "Cancelado"),
+            ]
+        )
     }
-    list_columns = ['id', 'cliente', 'total', 'estado', 'creado_en']
-    add_columns = ['cliente', 'estado']
-    edit_columns = ['cliente', 'estado', 'entregado_en']
-    show_columns = ['id', 'cliente', 'total', 'estado', 'creado_en', 'entregado_en']
 
+    label_columns = {
+        "cliente": "Cliente",
+        "total": "Total",
+        "estado": "Estado",
+        "creado_en": "Creado en",
+        "entregado_en": "Entregado en"
+    }
+
+    list_columns = [
+        "id",
+        "cliente",
+        "total",
+        "estado",
+        "creado_en",
+        "entregado_en"
+    ]
+
+    add_columns = [
+        "cliente",
+        "estado"
+    ]
+
+    edit_columns = [
+        "cliente",
+        "estado",
+        "entregado_en"
+    ]
+
+    show_columns = [
+        "id",
+        "cliente",
+        "total",
+        "estado",
+        "creado_en",
+        "entregado_en",
+        "items",
+        "pagos"
+    ]
 
 class PedidoItemModelView(ModelView):
     datamodel = SQLAInterface(PedidoItem)
@@ -167,45 +241,175 @@ class PedidoItemModelView(ModelView):
 
 class PagoModelView(ModelView):
     datamodel = SQLAInterface(Pago)
+    form_extra_fields = {
+    "metodo": SelectField(
+        "Método",
+        choices=[
+            ("efectivo", "Efectivo"),
+            ("qr", "QR"),
+            ("tarjeta", "Tarjeta"),
+        ]
+    ),
+    "estado": SelectField(
+        "Estado",
+        choices=[
+            ("pendiente", "Pendiente"),
+            ("pagado", "Pagado"),
+            ("anulado", "Anulado"),
+        ]
+    )
+}
+
     label_columns = {
-        'pedido': 'Pedido',
-        'monto': 'Monto',
-        'metodo': 'Método',
-        'estado': 'Estado',
-        'referencia_transaccion': 'Referencia',
-        'fecha': 'Fecha'
+        "pedido": "Pedido",
+        "monto": "Monto",
+        "metodo": "Método",
+        "estado": "Estado",
+        "monto_recibido": "Monto recibido",
+        "vuelto": "Vuelto",
+        "referencia_transaccion": "Referencia",
+        "fecha": "Fecha",
+        "factura": "Factura"
     }
-    list_columns = ['pedido', 'monto', 'metodo', 'estado', 'fecha']
-    add_columns = ['pedido', 'monto', 'metodo', 'estado', 'referencia_transaccion']
+
+    list_columns = [
+        "pedido",
+        "monto",
+        "metodo",
+        "estado",
+        "monto_recibido",
+        "vuelto",
+        "fecha"
+    ]
+
+    add_columns = [
+        "pedido",
+        "monto",
+        "metodo",
+        "estado",
+        "monto_recibido",
+        "referencia_transaccion"
+    ]
+
     edit_columns = add_columns
-    show_columns = ['pedido', 'monto', 'metodo', 'estado', 'referencia_transaccion', 'fecha']
+
+    show_columns = [
+        "pedido",
+        "monto",
+        "metodo",
+        "estado",
+        "monto_recibido",
+        "vuelto",
+        "referencia_transaccion",
+        "fecha",
+        "factura"
+    ]
 
     def on_model_change(self, form, model, is_created):
-        # Si el pago queda completado, marcar pedido y ajustar stock
-        from .extensions import db
-        # Autocompletar monto si no fue informado
-        if model.pedido and (not model.monto or float(model.monto) == 0):
-            model.monto = model.pedido.total
+        pedido = model.pedido
 
-        prev_estado = None
-        if not is_created and model.id:
-            prev = db.session.query(Pago).get(model.id)
-            if prev:
-                prev_estado = (prev.estado or '').lower()
+        if pedido and (not model.monto or Decimal(model.monto) == Decimal("0")):
+            model.monto = pedido.total or Decimal("0")
 
-        new_estado = (model.estado or '').lower()
-        if new_estado in ('completado', 'pagado') and prev_estado not in ('completado', 'pagado'):
-            pedido = model.pedido
-            if pedido:
-                pedido.estado = 'pagado'
-                # Reducir stock por cada item
-                for item in pedido.items:
-                    if item.producto and item.cantidad:
-                        item.producto.stock = max(0, (item.producto.stock or 0) - item.cantidad)
-                        db.session.add(item.producto)
-                db.session.add(pedido)
+        metodo = (model.metodo or "").lower()
+        estado = (model.estado or "").lower()
+
+        monto = Decimal(model.monto or 0)
+
+        if metodo == "efectivo":
+            recibido = Decimal(model.monto_recibido or 0)
+
+            if recibido < monto:
+                raise Exception("El monto recibido no puede ser menor al monto a pagar.")
+
+            model.vuelto = recibido - monto
+        else:
+            model.monto_recibido = None
+            model.vuelto = None
+
+        if estado == "pagado" and pedido:
+            pedido.estado = "entregado"
+            pedido.entregado_en = datetime.now()
+
+            for item in pedido.items:
+                if item.producto and item.cantidad:
+                    item.producto.stock = max(
+                        0,
+                        (item.producto.stock or 0) - item.cantidad
+                    )
+                    db.session.add(item.producto)
+
+            db.session.add(pedido)
+
+            cliente = pedido.cliente
+
+            if cliente and cliente.requiere_factura:
+                factura_existente = db.session.query(Factura).filter_by(
+                    pedido_id=pedido.id
+                ).first()
+
+                if not factura_existente:
+                    factura = Factura(
+                        pedido=pedido,
+                        pago=model,
+                        cliente=cliente,
+                        nit=cliente.nit,
+                        razon_social=cliente.razon_social or cliente.nombre,
+                        monto_total=model.monto,
+                        estado="emitida",
+                        fecha=datetime.now()
+                    )
+                    db.session.add(factura)
+
         db.session.add(model)
 
+class FacturaModelView(ModelView):
+    datamodel = SQLAInterface(Factura)
+
+    label_columns = {
+        "pedido": "Pedido",
+        "pago": "Pago",
+        "cliente": "Cliente",
+        "nit": "NIT",
+        "razon_social": "Razón social",
+        "monto_total": "Monto total",
+        "fecha": "Fecha",
+        "estado": "Estado"
+    }
+
+    list_columns = [
+        "id",
+        "pedido",
+        "cliente",
+        "nit",
+        "razon_social",
+        "monto_total",
+        "fecha",
+        "estado"
+    ]
+
+    add_columns = [
+        "pedido",
+        "pago",
+        "cliente",
+        "nit",
+        "razon_social",
+        "monto_total",
+        "estado"
+    ]
+
+    edit_columns = add_columns
+
+    show_columns = [
+        "pedido",
+        "pago",
+        "cliente",
+        "nit",
+        "razon_social",
+        "monto_total",
+        "fecha",
+        "estado"
+    ]
 
 appbuilder.add_view(
     ClienteModelView,
@@ -238,6 +442,34 @@ appbuilder.add_view(
     category="Ventas",
     category_icon="fa-shopping-cart"
 )
+
+appbuilder.add_view(
+    FacturaModelView,
+    "Facturación",
+    icon="fa-file-invoice",
+    category="Ventas",
+    category_icon="fa-shopping-cart"
+)
+
+class ImprimirFacturaView(BaseView):
+    route_base = "/factura"
+
+    @expose("/<int:factura_id>/imprimir")
+    @has_access
+    def imprimir(self, factura_id):
+        factura = db.session.query(Factura).get(factura_id)
+
+        if not factura:
+            return "Factura no encontrada", 404
+
+        return self.render_template(
+            "factura_imprimir.html",
+            factura=factura,
+            title="Factura"
+        )
+
+
+appbuilder.add_view_no_menu(ImprimirFacturaView())
 
 # -----------------------------
 # REPORTES

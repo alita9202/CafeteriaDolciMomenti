@@ -63,6 +63,11 @@ class Cliente(Model):
     email = Column(String(150), nullable=True, unique=False)
     telefono = Column(String(50), nullable=True)
     direccion = Column(Text, nullable=True)
+
+    requiere_factura = Column(Boolean, default=False, nullable=False)
+    nit = Column(String(30), nullable=True)
+    razon_social = Column(String(150), nullable=True)
+
     creado_en = Column(DateTime, default=datetime.now, nullable=False)
 
     pedidos = relationship(
@@ -98,6 +103,12 @@ class Pedido(Model):
 
     pagos = relationship(
         "Pago",
+        back_populates="pedido",
+        cascade="all, delete-orphan"
+    )
+
+    facturas = relationship(
+        "Factura",
         back_populates="pedido",
         cascade="all, delete-orphan"
     )
@@ -138,6 +149,10 @@ class Pago(Model):
     monto = Column(Numeric(10, 2), nullable=False)
     metodo = Column(String(50), nullable=False)
     estado = Column(String(50), nullable=False, default="pendiente")
+
+    monto_recibido = Column(Numeric(10, 2), nullable=True)
+    vuelto = Column(Numeric(10, 2), nullable=True)
+
     referencia_transaccion = Column(String(255), nullable=True)
     fecha = Column(DateTime, default=datetime.now, nullable=False)
 
@@ -146,5 +161,41 @@ class Pago(Model):
         back_populates="pagos"
     )
 
+    factura = relationship(
+        "Factura",
+        back_populates="pago",
+        uselist=False
+    )
+
     def __repr__(self):
         return f"Pago #{self.id} - {self.monto} ({self.metodo})"
+
+
+class Factura(Model):
+    __tablename__ = "factura"
+
+    id = Column(Integer, primary_key=True)
+    pedido_id = Column(Integer, ForeignKey("pedido.id"), nullable=False)
+    pago_id = Column(Integer, ForeignKey("pago.id"), nullable=True)
+    cliente_id = Column(Integer, ForeignKey("cliente.id"), nullable=True)
+
+    nit = Column(String(30), nullable=True)
+    razon_social = Column(String(150), nullable=True)
+    monto_total = Column(Numeric(10, 2), nullable=False, default=0)
+    fecha = Column(DateTime, default=datetime.now, nullable=False)
+    estado = Column(String(50), nullable=False, default="emitida")
+
+    pedido = relationship(
+        "Pedido",
+        back_populates="facturas"
+    )
+
+    pago = relationship(
+        "Pago",
+        back_populates="factura"
+    )
+
+    cliente = relationship("Cliente")
+
+    def __repr__(self):
+        return f"Factura #{self.id} - {self.razon_social or 'Sin razón social'}"
