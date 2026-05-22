@@ -1,0 +1,310 @@
+{% extends "appbuilder/base.html" %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0 !important;
+        min-height: 100%;
+        font-family: 'Inter', sans-serif;
+        background: #08111f;
+        overflow-x: hidden;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(52, 79, 109, 0.16), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 28%),
+            #08111f;
+    }
+
+    .landing-wrapper {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        box-sizing: border-box;
+    }
+
+    .landing-card {
+        width: 100%;
+        max-width: 1320px;
+        min-height: 88vh;
+        background: #f5f1ea;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.30);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .landing-left {
+        padding: 80px 70px 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #f5f1ea;
+    }
+
+    .intro-text {
+        color: #566473;
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 18px;
+        letter-spacing: 0.3px;
+    }
+
+    .main-title {
+        margin: 0;
+        color: #10263f;
+        font-size: 40px;
+        line-height: 1.05;
+        font-weight: 800;
+        letter-spacing: -1.2px;
+    }
+
+    .brand-script {
+        display: block;
+        margin-top: 8px;
+        font-family: 'Great Vibes', cursive;
+        font-size: 85px;
+        font-weight: 500;
+        line-height: 1;
+        color: #1b3550;
+        letter-spacing: 1px;
+        text-transform: none;
+    }
+
+    .dynamic-block {
+        margin-top: 30px;
+        max-width: 560px;
+        background: #ffffff;
+        border: 1px solid #e6e0d8;
+        border-radius: 22px;
+        padding: 24px 24px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+    }
+
+    .dynamic-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: #7c8996;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .dynamic-title {
+        margin: 0 0 12px;
+        color: #0f2238;
+        font-size: 28px;
+        line-height: 1.15;
+        font-weight: 800;
+    }
+
+    .dynamic-text {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 17px;
+        line-height: 1.75;
+        font-weight: 500;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 32px;
+    }
+
+    .btn-main {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #10263f;
+        color: #ffffff;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        transition: 0.25s ease;
+    }
+
+    .btn-main:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .btn-alt {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        color: #10263f;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1.5px solid #c9d2dc;
+        transition: 0.25s ease;
+    }
+
+    .btn-alt:hover {
+        background: #ebe6de;
+        text-decoration: none;
+        color: #10263f;
+    }
+
+    .landing-right {
+        min-height: 100%;
+        background:
+            linear-gradient(rgba(8, 17, 31, 0.18), rgba(8, 17, 31, 0.18)),
+            url("https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80");
+        background-size: cover;
+        background-position: center;
+    }
+
+    @media (max-width: 1100px) {
+        .landing-card {
+            grid-template-columns: 1fr;
+        }
+
+        .landing-right {
+            min-height: 420px;
+            order: -1;
+        }
+
+        .landing-left {
+            padding: 50px 36px 40px;
+        }
+
+        .main-title {
+            font-size: 54px;
+        }
+
+        .brand-script {
+            font-size: 58px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .landing-wrapper {
+            padding: 14px;
+        }
+
+        .landing-card {
+            min-height: auto;
+            border-radius: 18px;
+        }
+
+        .landing-left {
+            padding: 36px 24px 30px;
+        }
+
+        .main-title {
+            font-size: 40px;
+            line-height: 1.02;
+        }
+
+        .brand-script {
+            font-size: 46px;
+        }
+
+        .dynamic-title {
+            font-size: 23px;
+        }
+
+        .dynamic-text {
+            font-size: 15px;
+        }
+
+        .hero-buttons {
+            flex-direction: column;
+        }
+
+        .btn-main,
+        .btn-alt {
+            width: 100%;
+        }
+    }
+</style>
+
+<section class="landing-wrapper">
+    <div class="landing-card">
+        <div class="landing-left">
+            <div class="intro-text">Bienvenido al sistema</div>
+
+            <h1 class="main-title">
+                Bienvenido a
+                <span class="brand-script">Dolcimomenti</span>
+            </h1>
+
+            <div class="dynamic-block">
+                <div class="dynamic-label">Inspiración del día</div>
+                <h2 class="dynamic-title" id="frase-titulo">Cada bebida cuenta una historia</h2>
+                <p class="dynamic-text" id="frase-texto">
+                    El capuchino combina espresso, leche vaporizada y espuma, logrando un equilibrio suave y cremoso.
+                </p>
+            </div>
+
+            <div class="hero-buttons">
+                <a class="btn-main" href="{{ url_for('AuthDBView.login') }}">
+                    Iniciar sesión
+                </a>
+            </div>
+        </div>
+        <div class="landing-right"></div>
+    </div>
+</section>
+
+<script>
+    const frases = [
+        {
+            titulo: "Cada bebida cuenta una historia",
+            texto: "El capuchino combina espresso, leche vaporizada y espuma, logrando un equilibrio suave y cremoso."
+        },
+        {
+            titulo: "El café también inspira decisiones",
+            texto: "Un espresso bien preparado destaca por su sabor concentrado y por la fina crema que se forma en la superficie."
+        },
+        {
+            titulo: "Sabor, aroma y experiencia",
+            texto: "Las bebidas frías y los frappés suelen atraer más consumo impulsivo en días calurosos."
+        },
+        {
+            titulo: "Un detalle puede cambiar la experiencia",
+            texto: "Ofrecer combos de bebida y postre puede ayudar a incrementar el ticket promedio del negocio."
+        },
+        {
+            titulo: "La presentación también vende",
+            texto: "Un buen latte no solo se disfruta por su sabor, también por su equilibrio visual y textura cremosa."
+        },
+        {
+            titulo: "Dulces momentos, mejores decisiones",
+            texto: "Una carta bien organizada permite destacar sabores, bebidas y productos con mayor potencial de venta."
+        }
+    ];
+
+    const elegida = frases[Math.floor(Math.random() * frases.length)];
+    document.getElementById("frase-titulo").textContent = elegida.titulo;
+    document.getElementById("frase-texto").textContent = elegida.texto;
+</script>
+{% endblock %}
