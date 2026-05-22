@@ -1,0 +1,369 @@
+{% extends "appbuilder/base.html" %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0 !important;
+        min-height: 100%;
+        font-family: 'Inter', sans-serif;
+        background: #08111f;
+        overflow-x: hidden;
+    }
+
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(52, 79, 109, 0.18), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 28%),
+            #08111f;
+    }
+
+    .login-wrapper {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        box-sizing: border-box;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 1120px;
+        min-height: 82vh;
+        background: #f5f1ea;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.32);
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+    }
+
+    .login-left {
+        position: relative;
+        background:
+            linear-gradient(rgba(8, 17, 31, 0.20), rgba(8, 17, 31, 0.42)),
+            url("https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80");
+        background-size: cover;
+        background-position: center;
+    }
+
+    .login-brand-box {
+        position: absolute;
+        left: 34px;
+        right: 34px;
+        bottom: 34px;
+        background: rgba(245, 241, 234, 0.92);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.20);
+    }
+
+    .login-brand-box small {
+        display: block;
+        color: #6a7785;
+        font-weight: 800;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+        font-size: 11px;
+        margin-bottom: 8px;
+    }
+
+    .login-brand-box h2 {
+        margin: 0;
+        color: #10263f;
+        font-size: 34px;
+        font-weight: 800;
+        line-height: 1.05;
+    }
+
+    .login-brand-box .brand-name {
+        display: block;
+        font-family: 'Great Vibes', cursive;
+        font-size: 48px;
+        font-weight: 400;
+        color: #1b3550;
+        line-height: 1.1;
+        margin-top: 4px;
+    }
+
+    .login-brand-box p {
+        margin: 14px 0 0;
+        color: #536576;
+        font-size: 14px;
+        line-height: 1.7;
+        font-weight: 500;
+    }
+
+    .login-right {
+        padding: 70px 70px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #f5f1ea;
+    }
+
+    .login-mini {
+        color: #6b7786;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+
+    .login-title {
+        margin: 0;
+        color: #10263f;
+        font-size: 46px;
+        line-height: 1.08;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .login-title span {
+        color: #1b3550;
+    }
+
+    .login-subtitle {
+        max-width: 430px;
+        margin: 14px 0 34px;
+        color: #5f6e7c;
+        font-size: 15px;
+        line-height: 1.7;
+        font-weight: 500;
+    }
+
+    .login-form-panel {
+        width: 100%;
+        max-width: 430px;
+        background: #ffffff;
+        border: 1px solid #e5dfd7;
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.06);
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        color: #10263f;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        height: 48px;
+        border-radius: 13px !important;
+        border: 1px solid #d9e0e7;
+        background: #f8fafc;
+        color: #10263f;
+        box-shadow: none !important;
+        padding: 0 14px;
+        font-weight: 600;
+    }
+
+    .form-control:focus {
+        border-color: #10263f;
+        box-shadow: 0 0 0 3px rgba(16, 38, 63, 0.12) !important;
+        background: #ffffff;
+    }
+
+    .checkbox {
+        color: #5f6e7c;
+        font-size: 13px;
+        margin-top: 8px;
+        margin-bottom: 18px;
+    }
+
+    .login-submit,
+    input[type="submit"],
+    .btn-primary {
+        width: 100%;
+        height: 50px;
+        border-radius: 13px !important;
+        background: #10263f !important;
+        color: #ffffff !important;
+        border: none !important;
+        font-weight: 800;
+        transition: 0.22s ease;
+        box-shadow: 0 10px 20px rgba(16, 38, 63, 0.18);
+    }
+
+    .login-submit:hover,
+    input[type="submit"]:hover,
+    .btn-primary:hover {
+        background: #173553 !important;
+        transform: translateY(-2px);
+    }
+
+    .login-note {
+        margin-top: 18px;
+        color: #7c8996;
+        font-size: 12px;
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    .back-home {
+        display: inline-flex;
+        width: fit-content;
+        margin-top: 22px;
+        color: #10263f;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 13px;
+    }
+
+    .back-home:hover {
+        color: #173553;
+        text-decoration: none;
+    }
+
+    @media (max-width: 950px) {
+        .login-card {
+            grid-template-columns: 1fr;
+        }
+
+        .login-left {
+            min-height: 320px;
+            order: -1;
+        }
+
+        .login-right {
+            padding: 46px 34px;
+        }
+
+        .login-title {
+            font-size: 38px;
+        }
+
+        .login-form-panel {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .login-wrapper {
+            padding: 14px;
+        }
+
+        .login-card {
+            border-radius: 20px;
+        }
+
+        .login-left {
+            min-height: 260px;
+        }
+
+        .login-brand-box {
+            left: 18px;
+            right: 18px;
+            bottom: 18px;
+            padding: 20px;
+        }
+
+        .login-brand-box h2 {
+            font-size: 26px;
+        }
+
+        .login-brand-box .brand-name {
+            font-size: 38px;
+        }
+
+        .login-right {
+            padding: 34px 22px;
+        }
+
+        .login-title {
+            font-size: 32px;
+        }
+
+        .login-form-panel {
+            padding: 24px;
+        }
+    }
+</style>
+
+<section class="login-wrapper">
+    <div class="login-card">
+        <div class="login-left">
+            <div class="login-brand-box">
+                <small>Acceso al sistema</small>
+                <h2>
+                    Gestión inteligente
+                    <span class="brand-name">Dolcimomenti</span>
+                </h2>
+                <p>
+                    Administra productos, clientes, pedidos, reportes e inteligencia artificial
+                    desde una experiencia moderna.
+                </p>
+            </div>
+        </div>
+
+        <div class="login-right">
+            <div class="login-mini">Bienvenido de nuevo</div>
+
+            <h1 class="login-title">
+                Iniciar <span>sesión</span>
+            </h1>
+
+            <p class="login-subtitle">
+                Ingresa con tu usuario y contraseña para acceder al panel administrativo.
+            </p>
+
+            <div class="login-form-panel">
+                <form action="{{ url_for('AuthDBView.login') }}?next=/dashboard/" method="post" name="login">
+                    {{ form.hidden_tag() if form.hidden_tag }}
+
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        {{ form.username(class="form-control", placeholder="Ej. admin") }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        {{ form.password(class="form-control", placeholder="Ingresa tu contraseña") }}
+                    </div>
+
+                    {% if form.remember_me %}
+                    <div class="checkbox">
+                        <label>
+                            {{ form.remember_me() }} Recordarme
+                        </label>
+                    </div>
+                    {% endif %}
+
+                    <input class="login-submit" type="submit" value="Entrar">
+                </form>
+
+                <div class="login-note">
+                    Sistema web para la gestión de una heladería-cafetería con reportes inteligentes.
+                </div>
+            </div>
+
+            <a class="back-home" href="{{ url_for('IndexView.index') }}">
+                ← Volver al inicio
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

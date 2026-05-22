@@ -366,3 +366,82 @@ appbuilder.add_link(
     category="Reportes",
     category_icon="fa-bar-chart"
 )
+
+from app.ai_service import generar_analisis_ia
+
+
+class PruebaIAView(BaseView):
+    route_base = "/ia/prueba"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        respuesta = generar_analisis_ia(
+            "Genera una recomendación breve para mejorar las ventas de una heladería-cafetería llamada DOLCIMOMENTI."
+        )
+
+        return f"""
+        <h2>Prueba de Inteligencia Artificial</h2>
+        <p><strong>Respuesta IA:</strong></p>
+        <p>{respuesta}</p>
+        """
+
+
+appbuilder.add_view_no_menu(PruebaIAView())
+
+# -----------------------------
+# DASHBOARD PRINCIPAL
+# -----------------------------
+
+class DashboardView(BaseView):
+    route_base = "/dashboard"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        total_productos = db.session.query(Producto).count()
+        total_clientes = db.session.query(Cliente).count()
+        total_pedidos = db.session.query(Pedido).count()
+
+        total_vendido = db.session.query(
+            func.coalesce(func.sum(Pedido.total), 0)
+        ).scalar()
+
+        pedidos_por_estado = db.session.query(
+            Pedido.estado,
+            func.count(Pedido.id)
+        ).group_by(Pedido.estado).all()
+
+        productos_mas_vendidos = db.session.query(
+            Producto.nombre,
+            func.coalesce(func.sum(PedidoItem.cantidad), 0)
+        ).join(
+            PedidoItem,
+            PedidoItem.producto_id == Producto.id
+        ).group_by(
+            Producto.id,
+            Producto.nombre
+        ).limit(5).all()
+
+        etiquetas_productos = [item[0] for item in productos_mas_vendidos]
+        cantidades_productos = [int(item[1]) for item in productos_mas_vendidos]
+
+        etiquetas_estados = [item[0] for item in pedidos_por_estado]
+        cantidades_estados = [int(item[1]) for item in pedidos_por_estado]
+
+        return self.render_template(
+            "dashboard.html",
+            total_productos=total_productos,
+            total_clientes=total_clientes,
+            total_pedidos=total_pedidos,
+            total_vendido=total_vendido,
+            productos_mas_vendidos=productos_mas_vendidos,
+            pedidos_por_estado=pedidos_por_estado,
+            etiquetas_productos=etiquetas_productos,
+            cantidades_productos=cantidades_productos,
+            etiquetas_estados=etiquetas_estados,
+            cantidades_estados=cantidades_estados
+        )
+
+
+appbuilder.add_view_no_menu(DashboardView())

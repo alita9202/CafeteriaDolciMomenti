@@ -1,0 +1,474 @@
+{% extends "appbuilder/base.html" %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    html, body {
+    margin: 0;
+    padding: 0 !important;
+    width: 100%;
+    min-height: 100%;
+    font-family: 'Inter', sans-serif;
+    background: #08111f;
+    overflow-x: hidden;
+}
+
+    body {
+        background: #08111f;
+    }
+
+    /* Quita el contenedor central de Flask-AppBuilder */
+    .container,
+    .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Quita espacios del contenido principal */
+    body > .container,
+    body > .container-fluid {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .dash-wrapper {
+        min-height: 100vh;
+        width: 100vw;
+        display: grid;
+        grid-template-columns: 270px 1fr;
+        background: #08111f;
+    }
+
+    .sidebar {
+        background: #111c2b;
+        color: #ffffff;
+        padding: 34px 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 12px 0 35px rgba(0,0,0,0.22);
+    }
+
+    .brand {
+        margin-bottom: 34px;
+    }
+
+    .brand small {
+        color: #8da0b3;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .brand h2 {
+        margin: 8px 0 0;
+        font-family: 'Great Vibes', cursive;
+        font-size: 42px;
+        font-weight: 400;
+        color: #f5f1ea;
+        line-height: 1;
+    }
+
+    .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .menu a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 14px;
+        border-radius: 14px;
+        color: #b8c4d1;
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.2s ease;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+        background: #f5f1ea;
+        color: #10263f;
+        text-decoration: none;
+    }
+
+    .logout-box a {
+        display: block;
+        text-align: center;
+        background: #f5f1ea;
+        color: #10263f;
+        padding: 13px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 800;
+        transition: 0.2s ease;
+    }
+
+    .logout-box a:hover {
+        background: #ffffff;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .dash-main {
+        padding: 34px 42px;
+        background: #eef1f5;
+        min-width: 0;
+    }
+
+    .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .topbar-title h1 {
+        margin: 0;
+        color: #10263f;
+        font-size: 34px;
+        font-weight: 800;
+    }
+
+    .topbar-title p {
+        margin: 7px 0 0;
+        color: #6b7786;
+        font-weight: 600;
+    }
+
+    .search-box {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 14px 18px;
+        min-width: 280px;
+        color: #99a4b0;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .metric-card {
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.06);
+        border: 1px solid #e4e8ed;
+    }
+
+    .metric-card span {
+        color: #7c8996;
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+    }
+
+    .metric-card h2 {
+        margin: 10px 0 0;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .grid-content {
+        display: grid;
+        grid-template-columns: 1.4fr 0.8fr;
+        gap: 20px;
+    }
+
+    .panel {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.06);
+        border: 1px solid #e4e8ed;
+    }
+
+    .panel h3 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-weight: 800;
+        font-size: 21px;
+    }
+
+    .mini-panels {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin-top: 20px;
+    }
+
+    .list-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f3;
+        color: #526272;
+        font-weight: 700;
+    }
+
+    .list-row:last-child {
+        border-bottom: none;
+    }
+
+    .pill {
+        background: #eef3f7;
+        color: #10263f;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 12px;
+    }
+
+    .ia-box {
+        background: #10263f;
+        color: #ffffff;
+        border-radius: 24px;
+        padding: 24px;
+        margin-top: 20px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+    }
+
+    .ia-box h3 {
+        margin: 0 0 10px;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .ia-box p {
+        margin: 0;
+        color: #d7e0ea;
+        line-height: 1.7;
+        font-weight: 500;
+    }
+
+    @media (max-width: 1050px) {
+        .dash-wrapper {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            position: relative;
+        }
+
+        .cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .dash-main {
+            padding: 18px;
+        }
+
+        .cards,
+        .mini-panels {
+            grid-template-columns: 1fr;
+        }
+
+        .topbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            min-width: auto;
+        }
+    }
+</style>
+
+<div class="dash-wrapper">
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <small>Panel administrativo</small>
+                <h2>Dolcimomenti</h2>
+            </div>
+
+            <nav class="menu">
+                <a class="active" href="/dashboard/">🏠 Dashboard</a>
+                <a href="/productomodelview/list/">☕ Productos</a>
+                <a href="/categoriamodelview/list/">🍨 Categorías</a>
+                <a href="/clientemodelview/list/">👥 Clientes</a>
+                <a href="/pedidomodelview/list/">🧾 Pedidos</a>
+                <a href="/pedidoitemmodelview/list/">🛒 Detalle pedidos</a>
+                <a href="/reportes/">📊 Reportes</a>
+                <a href="/graficas/">📈 Gráficas</a>
+                <a href="/ia/prueba/">🤖 IA</a>
+            </nav>
+        </div>
+
+        <div class="logout-box">
+            <a href="/logout/">Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <main class="dash-main">
+        <div class="topbar">
+            <div class="topbar-title">
+                <h1>Dashboard</h1>
+                <p>Resumen general de la heladería-cafetería.</p>
+            </div>
+
+            <div class="search-box">
+                Panel de control inteligente
+            </div>
+        </div>
+
+        <section class="cards">
+            <div class="metric-card">
+                <span>Productos</span>
+                <h2>{{ total_productos }}</h2>
+            </div>
+
+            <div class="metric-card">
+                <span>Clientes</span>
+                <h2>{{ total_clientes }}</h2>
+            </div>
+
+            <div class="metric-card">
+                <span>Pedidos</span>
+                <h2>{{ total_pedidos }}</h2>
+            </div>
+
+            <div class="metric-card">
+                <span>Total vendido</span>
+                <h2>{{ total_vendido }} Bs</h2>
+            </div>
+        </section>
+
+        <section class="grid-content">
+            <div>
+                <div class="panel">
+                    <h3>Productos más vendidos</h3>
+                    <canvas id="graficaProductos" height="120"></canvas>
+                </div>
+
+                <div class="mini-panels">
+                    <div class="panel">
+                        <h3>Ranking de productos</h3>
+                        {% for producto, cantidad in productos_mas_vendidos %}
+                        <div class="list-row">
+                            <span>{{ producto }}</span>
+                            <span class="pill">{{ cantidad }}</span>
+                        </div>
+                        {% else %}
+                        <div class="list-row">
+                            <span>No existen ventas registradas</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="panel">
+                        <h3>Pedidos por estado</h3>
+                        {% for estado, cantidad in pedidos_por_estado %}
+                        <div class="list-row">
+                            <span>{{ estado }}</span>
+                            <span class="pill">{{ cantidad }}</span>
+                        </div>
+                        {% else %}
+                        <div class="list-row">
+                            <span>No existen pedidos registrados</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <h3>Estados de pedidos</h3>
+                    <canvas id="graficaEstados" height="220"></canvas>
+                </div>
+
+                <div class="ia-box">
+                    <h3>IA integrada</h3>
+                    <p>
+                        El sistema ya está preparado para generar análisis automáticos,
+                        recomendaciones y conclusiones inteligentes usando datos reales del negocio.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const etiquetasProductos = {{ etiquetas_productos | tojson }};
+    const cantidadesProductos = {{ cantidades_productos | tojson }};
+    const etiquetasEstados = {{ etiquetas_estados | tojson }};
+    const cantidadesEstados = {{ cantidades_estados | tojson }};
+
+    new Chart(document.getElementById('graficaProductos'), {
+        type: 'line',
+        data: {
+            labels: etiquetasProductos,
+            datasets: [{
+                label: 'Cantidad vendida',
+                data: cantidadesProductos,
+                tension: 0.35,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('graficaEstados'), {
+        type: 'doughnut',
+        data: {
+            labels: etiquetasEstados,
+            datasets: [{
+                label: 'Pedidos',
+                data: cantidadesEstados
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+{% endblock %}
