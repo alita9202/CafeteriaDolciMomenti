@@ -1,0 +1,70 @@
+{% extends "appbuilder/base.html" %} {% block content %}
+<div class="container mt-4">
+  <h2>Prueba de Integracion IA</h2>
+  <p>
+    Ejecuta una prueba de conectividad con OpenRouter desde la interfaz del
+    sistema.
+  </p>
+
+  <div class="panel panel-info">
+    <div class="panel-heading">Estado del servicio IA</div>
+    <div class="panel-body">
+      <button id="btn-probar-ia" class="btn btn-primary">
+        Ejecutar prueba IA
+      </button>
+      <pre id="resultado-prueba-ia" style="margin-top: 12px; min-height: 72px">
+Sin ejecutar.</pre
+      >
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const btn = document.getElementById("btn-probar-ia");
+    const output = document.getElementById("resultado-prueba-ia");
+    if (!btn || !output) return;
+
+    btn.addEventListener("click", async function () {
+      btn.disabled = true;
+      output.textContent = "Ejecutando prueba...";
+
+      try {
+        const response = await fetch("/ia/health", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+
+        const raw = await response.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          data = { raw_response: raw };
+        }
+
+        output.textContent = JSON.stringify(
+          {
+            status_code: response.status,
+            ok: response.ok,
+            data: data,
+          },
+          null,
+          2,
+        );
+      } catch (error) {
+        output.textContent = JSON.stringify(
+          {
+            ok: false,
+            error: String(error),
+          },
+          null,
+          2,
+        );
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>
+{% endblock %}

@@ -18,7 +18,7 @@ appbuilder.add_view_no_menu(UsuariosProtegidoView())
 
 
 # Product CRUD using Flask-AppBuilder
-from flask import current_app
+from flask import current_app, jsonify
 from flask_appbuilder import ModelView
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
@@ -244,6 +244,7 @@ appbuilder.add_view(
 # -----------------------------
 from sqlalchemy import func
 from .extensions import db
+from .services.openrouter_service import AIServiceError, OpenRouterService
 
 
 class ReporteView(BaseView):
@@ -288,6 +289,36 @@ class ReporteView(BaseView):
         etiquetas_productos = [item[0] for item in productos_mas_vendidos]
         cantidades_productos = [int(item[1]) for item in productos_mas_vendidos]
 
+        # Analisis automatico por IA (si esta configurado OpenRouter)
+        ai_analisis = None
+        ai_estado = "deshabilitado"
+        ai_error = None
+        try:
+            ai_service = OpenRouterService.from_current_app()
+            if ai_service.is_enabled:
+                ai_analisis = ai_service.analizar_reporte_general(
+                    {
+                        "total_productos": total_productos,
+                        "total_clientes": total_clientes,
+                        "total_pedidos": total_pedidos,
+                        "total_vendido": float(total_vendido or 0),
+                        "pedidos_por_estado": [
+                            {"estado": estado, "cantidad": int(cantidad)}
+                            for estado, cantidad in pedidos_por_estado
+                        ],
+                        "productos_mas_vendidos": [
+                            {"producto": nombre, "cantidad": int(cantidad)}
+                            for nombre, cantidad in productos_mas_vendidos
+                        ],
+                    }
+                )
+                ai_estado = "activo"
+            else:
+                ai_error = "Configura OPENROUTER_API_KEY para habilitar analisis automatico."
+        except AIServiceError as exc:
+            ai_estado = "error"
+            ai_error = str(exc)
+
         return self.render_template(
             "reportes.html",
             title="Reportes",
@@ -298,8 +329,33 @@ class ReporteView(BaseView):
             pedidos_por_estado=pedidos_por_estado,
             productos_mas_vendidos=productos_mas_vendidos,
             etiquetas_productos=etiquetas_productos,
-            cantidades_productos=cantidades_productos
+            cantidades_productos=cantidades_productos,
+            ai_analisis=ai_analisis,
+            ai_estado=ai_estado,
+            ai_error=ai_error,
         )
+
+
+class IAServiceView(BaseView):
+    route_base = "/ia"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        return self.render_template("ia_prueba.html", title="Prueba IA")
+
+    @expose("/health")
+    @expose("/health/")
+    @has_access
+    def health(self):
+        try:
+            service = OpenRouterService.from_current_app()
+            if not service.is_enabled:
+                return jsonify({"ok": False, "message": "OPENROUTER_API_KEY no configurada"}), 400
+            response = service.health_check()
+            return jsonify({"ok": True, "response": response, "model": service.settings.model})
+        except AIServiceError as exc:
+            return jsonify({"ok": False, "message": str(exc)}), 502
 
 
 appbuilder.add_view_no_menu(ReporteView())
@@ -363,6 +419,15 @@ appbuilder.add_link(
     "Gráficas",
     href="/graficas/",
     icon="fa-pie-chart",
+    category="Reportes",
+    category_icon="fa-bar-chart"
+)
+
+appbuilder.add_view_no_menu(IAServiceView())
+appbuilder.add_link(
+    "Prueba IA",
+    href="/ia/",
+    icon="fa-robot",
     category="Reportes",
     category_icon="fa-bar-chart"
 )
