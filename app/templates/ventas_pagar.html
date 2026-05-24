@@ -223,7 +223,11 @@
             </div>
 
             <button class="btn-confirmar" type="button" id="btnConfirmarPago">
-                Confirmar pago
+                {% if pedido.cliente and pedido.cliente.requiere_factura %}
+                    Confirmar pago e imprimir factura
+                {% else %}
+                    Confirmar pago
+                {% endif %}
             </button>
         </section>
     </div>
@@ -258,6 +262,7 @@
 
     actualizarCamposPago();
     const btnConfirmarPago = document.getElementById("btnConfirmarPago");
+    const textoBotonOriginal = btnConfirmarPago.textContent.trim();
     const referencia = document.getElementById("referencia");
 
     btnConfirmarPago.addEventListener("click", async () => {
@@ -276,7 +281,7 @@
         };
 
         btnConfirmarPago.disabled = true;
-        btnConfirmarPago.textContent = "Confirmando pago...";
+        btnConfirmarPago.textContent = textoBotonOriginal;
 
         try {
             const response = await fetch("/ventas/pagar/{{ pedido.id }}/confirmar", {
