@@ -124,6 +124,33 @@ class OpenRouterService:
         )
         return self.chat_completion(system_prompt=system_prompt, user_prompt=user_prompt)
 
+    def analizar_reporte_prediccion(self, metrics: dict[str, Any]) -> str:
+        system_prompt = (
+            "Eres un consultor senior de operaciones para una cafeteria. "
+            "Debes producir recomendaciones accionables de inventario y ventas, "
+            "con enfoque en evitar quiebres de stock y mejorar ingresos."
+        )
+        user_prompt = (
+            "Con base en estos datos del sistema, entrega predicciones y recomendaciones:\n"
+            f"{metrics}\n\n"
+            "Reglas de respuesta:\n"
+            "- Usa lenguaje claro en espanol.\n"
+            "- Prioriza acciones para los siguientes 7 y 14 dias.\n"
+            "- Incluye una lista de productos en riesgo y cantidad sugerida de reposicion.\n"
+            "- Cierra con un plan de accion en 5 pasos.\n\n"
+            "Formato:\n"
+            "1) Prediccion de demanda\n"
+            "2) Productos criticos y reposicion sugerida\n"
+            "3) Recomendaciones comerciales\n"
+            "4) Plan de accion"
+        )
+        return self.chat_completion(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.2,
+            max_tokens=600,
+        )
+
     def health_check(self) -> str:
         return self.chat_completion(
             system_prompt="Responde solo con el texto OK_OPENROUTER.",

@@ -18,7 +18,7 @@ appbuilder.add_view_no_menu(UsuariosProtegidoView())
 
 
 # Product CRUD using Flask-AppBuilder
-from flask import jsonify
+from flask import jsonify, request
 from flask_appbuilder import ModelView
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
@@ -247,6 +247,7 @@ from .extensions import db
 from .services.openrouter_service import AIServiceError, OpenRouterService
 from .services.reporte_general_service import ReporteGeneralError, ReporteGeneralService
 from .services.reporte_tendencias_service import ReporteTendenciasError, ReporteTendenciasService
+from .services.reporte_prediccion_service import ReportePrediccionError, ReportePrediccionService
 
 
 class ReporteView(BaseView):
@@ -446,6 +447,80 @@ class ReporteTendenciasView(BaseView):
         )
 
 
+class ReportePrediccionView(BaseView):
+    route_base = "/reporte-prediccion"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        data_estado = "ok"
+        data_error = None
+
+        productos_demanda = []
+        productos_riesgo = []
+        categorias_top = []
+        demanda_general = {"unidades_30d": 0.0, "unidades_90d": 0.0}
+        cache_hit = False
+        cache_age_seconds = 0
+
+        force_refresh = str(request.args.get("refresh", "0")).lower() in ("1", "true", "yes")
+
+        try:
+            service = ReportePrediccionService.from_current_app()
+            data = service.obtener_datos_reporte_3(force_refresh=force_refresh)
+            productos_demanda = data["productos_demanda"]
+            productos_riesgo = data["productos_riesgo"]
+            categorias_top = data["categorias_top"]
+            demanda_general = data["demanda_general"]
+            cache_hit = bool(data.get("cache_hit", False))
+            cache_age_seconds = float(data.get("cache_age_seconds", 0))
+        except ReportePrediccionError as exc:
+            data_estado = "error"
+            data_error = str(exc)
+
+        ai_analisis = None
+        ai_estado = "deshabilitado"
+        ai_error = None
+
+        if data_estado != "error":
+            try:
+                ai_service = OpenRouterService.from_current_app()
+                if ai_service.is_enabled:
+                    ai_analisis = ai_service.analizar_reporte_prediccion(
+                        {
+                            "demanda_general": demanda_general,
+                            "productos_top_demanda": productos_demanda[:8],
+                            "productos_riesgo": productos_riesgo,
+                            "categorias_top": categorias_top[:5],
+                        }
+                    )
+                    ai_estado = "activo"
+                else:
+                    ai_error = "Configura OPENROUTER_API_KEY para habilitar analisis automatico."
+            except AIServiceError as exc:
+                ai_estado = "error"
+                ai_error = str(exc)
+        else:
+            ai_estado = "error"
+            ai_error = "No se pudo generar analisis IA porque la carga de datos fallo."
+
+        return self.render_template(
+            "reporte_prediccion.html",
+            title="Reporte Predicción por IA",
+            data_estado=data_estado,
+            data_error=data_error,
+            productos_demanda=productos_demanda,
+            productos_riesgo=productos_riesgo,
+            categorias_top=categorias_top,
+            demanda_general=demanda_general,
+            cache_hit=cache_hit,
+            cache_age_seconds=cache_age_seconds,
+            ai_analisis=ai_analisis,
+            ai_estado=ai_estado,
+            ai_error=ai_error,
+        )
+
+
 class IAServiceView(BaseView):
     route_base = "/ia"
 
@@ -471,6 +546,7 @@ class IAServiceView(BaseView):
 appbuilder.add_view_no_menu(ReporteView())
 appbuilder.add_view_no_menu(ReporteGeneralView())
 appbuilder.add_view_no_menu(ReporteTendenciasView())
+appbuilder.add_view_no_menu(ReportePrediccionView())
 
 appbuilder.add_link(
     "Reportes",
@@ -492,6 +568,14 @@ appbuilder.add_link(
     "Reporte Tendencias por IA",
     href="/reporte-tendencias/",
     icon="fa-area-chart",
+    category="Reportes",
+    category_icon="fa-bar-chart"
+)
+
+appbuilder.add_link(
+    "Reporte Predicción por IA",
+    href="/reporte-prediccion/",
+    icon="fa-magic",
     category="Reportes",
     category_icon="fa-bar-chart"
 )
