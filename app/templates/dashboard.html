@@ -315,6 +315,18 @@
         font-weight: 500;
     }
 
+    .mobile-menu-btn {
+        display: none;
+        background: #10263f;
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 800;
+        margin-bottom: 18px;
+        width: fit-content;
+    }
+
     @media (max-width: 1050px) {
         .dash-wrapper {
             grid-template-columns: 1fr;
@@ -322,6 +334,30 @@
 
         .sidebar {
             position: relative;
+            padding: 22px;
+            box-shadow: none;
+        }
+
+        .brand {
+            margin-bottom: 18px;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .menu > a,
+        .menu-title {
+            background: rgba(245, 241, 234, 0.08);
+        }
+
+        .submenu {
+            position: static;
+            margin-left: 0;
+            padding-left: 0;
+            border-left: none;
         }
 
         .cards {
@@ -334,13 +370,35 @@
     }
 
     @media (max-width: 700px) {
-        .dash-main {
+        .dash-wrapper {
+            width: 100%;
+        }
+
+        .sidebar {
             padding: 18px;
         }
 
-        .cards,
-        .mini-panels {
+        .brand h2 {
+            font-size: 34px;
+        }
+
+        .menu {
             grid-template-columns: 1fr;
+        }
+
+        .menu a,
+        .menu-title {
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .submenu a {
+            font-size: 12px;
+            padding: 9px 10px !important;
+        }
+
+        .dash-main {
+            padding: 18px;
         }
 
         .topbar {
@@ -348,8 +406,43 @@
             align-items: stretch;
         }
 
+        .topbar-title h1 {
+            font-size: 28px;
+        }
+
+        .cards,
+        .mini-panels {
+            grid-template-columns: 1fr;
+        }
+
+        .metric-card {
+            padding: 20px;
+        }
+
+        .grid-content {
+            grid-template-columns: 1fr;
+        }
+
         .search-box {
             min-width: auto;
+        }
+
+        .mobile-menu-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar {
+            display: none;
+        }
+
+        .sidebar.open {
+            display: block;
+        }
+
+        .dash-wrapper {
+            display: block;
         }
     }
 </style>
@@ -412,6 +505,9 @@
     </aside>
 
     <main class="dash-main">
+        <button class="mobile-menu-btn" type="button" id="mobileMenuBtn">
+            ☰ Menú
+        </button>
         <div class="topbar">
             <div class="topbar-title">
                 <h1>Dashboard</h1>
@@ -548,5 +644,21 @@
             responsive: true
         }
     });
+</script>
+<script>
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    const sidebar = document.querySelector(".sidebar");
+
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+
+            if (sidebar.classList.contains("open")) {
+                mobileMenuBtn.textContent = "✕ Cerrar menú";
+            } else {
+                mobileMenuBtn.textContent = "☰ Menú";
+            }
+        });
+    }
 </script>
 {% endblock %}
