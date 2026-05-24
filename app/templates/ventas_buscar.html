@@ -1,22 +1,18 @@
-{% extends "appbuilder/base.html" %}
+{% extends "admin_layout.html" %}
 
-{% block content %}
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
 <style>
-    .navbar,
-    .navbar-inverse,
-    .navbar-fixed-top {
-        display: none !important;
-    }
-
-    body {
-        background: #eef1f5;
-        padding-top: 0 !important;
-    }
-
     .buscar-page {
         min-height: 100vh;
         padding: 40px;
-        font-family: Arial, sans-serif;
+        font-family: 'Nunito Sans',sans-serif;
     }
 
     .buscar-header {
@@ -166,8 +162,6 @@
             <h1>Buscar pedido</h1>
             <p>Consulta los pedidos registrados, ordenados del más reciente al más antiguo.</p>
         </div>
-
-        <a class="btn-back" href="/dashboard/">Volver al dashboard</a>
     </div>
 
     <div class="buscar-card">

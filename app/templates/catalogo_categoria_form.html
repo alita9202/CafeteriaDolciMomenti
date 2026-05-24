@@ -1,0 +1,186 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .form-page {
+        max-width: 850px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .form-header {
+        margin-bottom: 24px;
+    }
+
+    .form-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .form-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .form-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 24px;
+    }
+
+    .field {
+        margin-bottom: 18px;
+    }
+
+    .field label {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 7px;
+    }
+
+    .field input,
+    .field textarea {
+        width: 100%;
+        border: 1px solid #dfe5ec;
+        border-radius: 8px;
+        padding: 11px 12px;
+        color: #10263f;
+        font-weight: 600;
+        background: #ffffff;
+    }
+
+    .field textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .check-field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f8fafc;
+        border: 1px solid #edf0f3;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 18px;
+        color: #10263f;
+        font-weight: 700;
+    }
+
+    .check-field input {
+        width: auto;
+        margin: 0;
+    }
+
+    .error-box {
+        background: #fdecec;
+        color: #a93939;
+        border: 1px solid #f5c2c2;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        font-weight: 700;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .btn-main,
+    .btn-secondary {
+        border-radius: 8px;
+        padding: 11px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-main {
+        background: #10263f;
+        color: #ffffff;
+    }
+
+    .btn-main:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #ffffff;
+        color: #10263f;
+        border: 1px solid #dfe5ec;
+    }
+
+    .btn-secondary:hover {
+        background: #eef3f7;
+        color: #10263f;
+        text-decoration: none;
+    }
+
+    @media (max-width: 700px) {
+        .form-header h1 {
+            font-size: 26px;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .btn-main,
+        .btn-secondary {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="form-page">
+    <div class="form-header">
+        <h1>Nueva categoría</h1>
+        <p>Registra una categoría para organizar productos del catálogo.</p>
+    </div>
+
+    <div class="form-card">
+        {% if error %}
+        <div class="error-box">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/catalogo/categorias/nueva/">
+            <div class="field">
+                <label>Nombre de la categoría</label>
+                <input type="text" name="nombre" placeholder="Ej. Helados, Cafés, Postres" required>
+            </div>
+
+            <div class="field">
+                <label>Descripción</label>
+                <textarea name="descripcion" placeholder="Describe brevemente esta categoría."></textarea>
+            </div>
+
+            <label class="check-field">
+                <input type="checkbox" name="activa" checked>
+                Categoría activa
+            </label>
+
+            <div class="actions">
+                <a class="btn-secondary" href="/catalogo/categorias/">Cancelar</a>
+                <button class="btn-main" type="submit">Guardar categoría</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .clientes-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .clientes-header {
+        margin-bottom: 24px;
+    }
+
+    .clientes-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .clientes-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .clientes-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
+    }
+
+    .clientes-card h2 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .clientes-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .clientes-table th {
+        text-align: left;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 14px 12px;
+        border-bottom: 1px solid #e7ebef;
+    }
+
+    .clientes-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
+        vertical-align: middle;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef3f7;
+        color: #10263f;
+    }
+
+    .pill-ok {
+        background: #e8f6ef;
+        color: #247a4b;
+    }
+
+    .pill-muted {
+        background: #f1f3f5;
+        color: #6b7786;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #10263f;
+        color: #ffffff;
+        padding: 8px 11px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .btn-action:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .empty-message {
+        padding: 28px;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        color: #6b7786;
+        font-weight: 600;
+        text-align: center;
+        background: #fafbfc;
+    }
+
+    @media (max-width: 900px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .clientes-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .clientes-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="clientes-page">
+    <div class="clientes-header">
+        <h1>Clientes</h1>
+        <p>Consulta los clientes registrados desde el flujo de ventas y sus datos de facturación.</p>
+    </div>
+
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Total clientes</span>
+            <strong>{{ total_clientes }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Con factura</span>
+            <strong>{{ clientes_factura }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Últimos registros</span>
+            <strong>{{ clientes | length }}</strong>
+        </div>
+    </section>
+
+    <section class="clientes-card">
+        <h2>Últimos clientes registrados</h2>
+
+        {% if clientes %}
+        <table class="clientes-table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Teléfono</th>
+                    <th>Factura</th>
+                    <th>NIT</th>
+                    <th>Razón social</th>
+                    <th>Registro</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.nombre }}</td>
+                    <td>{{ cliente.telefono or 'No registrado' }}</td>
+                    <td>
+                        {% if cliente.requiere_factura %}
+                            <span class="pill pill-ok">Sí</span>
+                        {% else %}
+                            <span class="pill pill-muted">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ cliente.nit or '-' }}</td>
+                    <td>{{ cliente.razon_social or '-' }}</td>
+                    <td>{{ cliente.creado_en }}</td>
+                    <td>
+                        <a class="btn-action" href="/ventas/buscar/?q={{ cliente.nombre }}">
+                            <i class="bi bi-search"></i> Ver pedidos
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-message">
+            Todavía no existen clientes registrados. Los clientes aparecerán aquí después de realizar ventas.
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

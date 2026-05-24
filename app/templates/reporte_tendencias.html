@@ -1,312 +1,223 @@
-{% extends "appbuilder/base.html" %} {% block content %}
-<div class="container mt-4">
-  <style>
-    .kpi-card {
-      border-radius: 12px;
-      border: 1px solid #e8e8e8;
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .reporte-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
     }
 
-    .kpi-title {
-      margin: 0;
-      color: #8a8a8a;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+    .reporte-header {
+        margin-bottom: 24px;
     }
 
-    .kpi-value {
-      margin: 8px 0 4px;
-      color: #273043;
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.1;
+    .reporte-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
     }
 
-    .kpi-desc {
-      margin: 0;
-      color: #6f6f6f;
-      font-size: 12px;
+    .reporte-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
     }
 
-    .section-card {
-      border: 1px solid #ebebeb;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      background: #fff;
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
     }
 
-    .section-title {
-      margin: 0 0 12px;
-      color: #2d3748;
-      font-weight: 600;
-      font-size: 18px;
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
     }
 
-    .mini-chart-wrap {
-      height: 320px;
-      position: relative;
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
     }
 
-    .badge-soft {
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 25px;
+        font-weight: 700;
     }
 
-    .badge-soft-info {
-      background: #e9f4ff;
-      color: #1d6fa5;
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
     }
 
-    .badge-soft-success {
-      background: #eaf8ef;
-      color: #2f7a49;
+    .panel {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
     }
 
-    .badge-soft-warning {
-      background: #fff4e5;
-      color: #8f5f0f;
+    .panel h2 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
     }
 
-    .delta-up {
-      color: #1a7f37;
-      font-weight: 600;
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
     }
 
-    .delta-down {
-      color: #b42318;
-      font-weight: 600;
+    .data-row:last-child {
+        border-bottom: none;
     }
-  </style>
 
-  <h2>Reporte 2: Tendencias y Comportamiento por IA</h2>
-  <p>Comparativa temporal de ventas, actividad y clientes frecuentes.</p>
+    .data-row span {
+        color: #6b7786;
+    }
 
-  <div style="margin-bottom: 12px">
-    <button id="btn-recargar-reporte" class="btn btn-primary">
-      Actualizar reporte
-    </button>
-    <span style="margin-left: 8px; color: #666"
-      >Consulta MySQL (PyMySQL) + análisis IA</span
-    >
-  </div>
+    .pill {
+        background: #eef3f7;
+        color: #10263f;
+        border-radius: 6px;
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 700;
+    }
 
-  <div id="estado-carga-reporte" class="alert alert-info" style="display: none">
-    Cargando y procesando tendencias...
-  </div>
+    .ai-panel {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 24px;
+    }
 
-  {% if data_error %}
-  <div class="alert alert-danger">
-    <strong>Error en datos:</strong> {{ data_error }}
-  </div>
-  {% endif %}
+    .ai-panel h2 {
+        margin: 0 0 14px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
 
-  <div class="row mt-4">
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Pedidos (30 días)</p>
-        <p class="kpi-value">{{ pedidos_30 }}</p>
-        <p class="kpi-desc">Periodo actual</p>
-      </div>
+    .ai-content {
+        color: #34495e;
+        font-size: 15px;
+        line-height: 1.8;
+        font-weight: 600;
+        white-space: pre-line;
+        background: #f8fafc;
+        border: 1px solid #edf0f3;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .empty-message {
+        color: #6b7786;
+        background: #fafbfc;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        padding: 20px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    @media (max-width: 1000px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .reporte-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="reporte-page">
+    <div class="reporte-header">
+        <h1>Reporte de tendencias IA</h1>
+        <p>Identificación de patrones de ventas, comportamiento de productos y movimiento comercial.</p>
     </div>
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Pedidos (previos 30 días)</p>
-        <p class="kpi-value">{{ pedidos_prev_30 }}</p>
-        <p class="kpi-desc">Periodo anterior</p>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Variación pedidos</p>
-        <p
-          class="kpi-value {% if variacion_pedidos_pct >= 0 %}delta-up{% else %}delta-down{% endif %}"
-        >
-          {{ '%.2f'|format(variacion_pedidos_pct) }}%
-        </p>
-        <p class="kpi-desc">Comparación 30 vs 30 días</p>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Variación ingresos</p>
-        <p
-          class="kpi-value {% if variacion_ingresos_pct >= 0 %}delta-up{% else %}delta-down{% endif %}"
-        >
-          {{ '%.2f'|format(variacion_ingresos_pct) }}%
-        </p>
-        <p class="kpi-desc">Comparación 30 vs 30 días</p>
-      </div>
-    </div>
-  </div>
 
-  <div class="row">
-    <div class="col-md-7">
-      <div class="section-card">
-        <h3 class="section-title">Tendencia de ingresos (últimos meses)</h3>
-        <div class="mini-chart-wrap">
-          <canvas id="chartVentasMensuales"></canvas>
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Pedidos analizados</span>
+            <strong>{{ total_pedidos | default(0) }}</strong>
         </div>
-      </div>
-    </div>
 
-    <div class="col-md-5">
-      <div class="section-card">
-        <h3 class="section-title">Horarios con mayor actividad</h3>
-        <div class="mini-chart-wrap">
-          <canvas id="chartActividadHoraria"></canvas>
+        <div class="summary-card">
+            <span>Total vendido</span>
+            <strong>{{ total_vendido | default(0) }} Bs</strong>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="section-card">
-    <h3 class="section-title">Clientes frecuentes</h3>
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Cliente</th>
-          <th>Pedidos</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for cliente, pedidos in clientes_frecuentes %}
-        <tr>
-          <td>{{ cliente }}</td>
-          <td>{{ pedidos }}</td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="2">No hay datos de clientes frecuentes.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        <div class="summary-card">
+            <span>Productos activos</span>
+            <strong>{{ total_productos | default(0) }}</strong>
+        </div>
+    </section>
 
-  <hr />
+    <section class="content-grid">
+        <div class="panel">
+            <h2>Productos con mayor movimiento</h2>
 
-  <h3>Interpretación inteligente por IA</h3>
-  {% if ai_analisis %}
-  <div class="panel panel-success">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-success">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body" style="white-space: pre-line">
-      {{ ai_analisis }}
-    </div>
-  </div>
-  {% elif ai_error %}
-  <div class="panel panel-warning">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-warning">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body">{{ ai_error }}</div>
-  </div>
-  {% else %}
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-info">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body">No hay análisis disponible todavía.</div>
-  </div>
-  {% endif %}
+            {% for producto, cantidad in productos_mas_vendidos | default([]) %}
+            <div class="data-row">
+                <span>{{ producto }}</span>
+                <strong class="pill">{{ cantidad }}</strong>
+            </div>
+            {% else %}
+            <div class="empty-message">
+                No existen datos suficientes para identificar productos con mayor movimiento.
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="panel">
+            <h2>Estados de pedidos</h2>
+
+            {% for estado, cantidad in pedidos_por_estado | default([]) %}
+            <div class="data-row">
+                <span>{{ estado }}</span>
+                <strong class="pill">{{ cantidad }}</strong>
+            </div>
+            {% else %}
+            <div class="empty-message">
+                No existen pedidos registrados para analizar tendencias por estado.
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="ai-panel">
+        <h2>Interpretación de tendencias</h2>
+
+        <div class="ai-content">
+            {{ ai_analisis | default("La interpretación de tendencias se mostrará cuando el sistema tenga datos suficientes y el servicio de IA responda correctamente.") }}
+        </div>
+    </section>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  (function () {
-    const btnRecargar = document.getElementById('btn-recargar-reporte');
-    const estadoCarga = document.getElementById('estado-carga-reporte');
-
-    function mostrarCarga() {
-      if (estadoCarga) estadoCarga.style.display = 'block';
-      if (btnRecargar) btnRecargar.disabled = true;
-    }
-
-    if (btnRecargar) {
-      btnRecargar.addEventListener('click', function () {
-        mostrarCarga();
-        window.location.href = '/reporte-tendencias/';
-      });
-    }
-
-    const ventasMensuales = {{ ventas_mensuales | tojson }} || [];
-    const actividadHoraria = {{ actividad_horaria | tojson }} || [];
-
-    const labelsVentas = ventasMensuales.map((row) => row[0]);
-    const valuesVentas = ventasMensuales.map((row) => Number(row[1] || 0));
-
-    const labelsHoras = actividadHoraria.map((row) => row[0]);
-    const valuesHoras = actividadHoraria.map((row) => Number(row[1] || 0));
-
-    const ctxVentas = document.getElementById('chartVentasMensuales');
-    if (ctxVentas && labelsVentas.length) {
-      new Chart(ctxVentas, {
-        type: 'line',
-        data: {
-          labels: labelsVentas,
-          datasets: [
-            {
-              label: 'Ingresos',
-              data: valuesVentas,
-              borderColor: '#2563EB',
-              backgroundColor: 'rgba(37, 99, 235, 0.15)',
-              fill: true,
-              tension: 0.3,
-              pointRadius: 4,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: true },
-          },
-        },
-      });
-    }
-
-    const ctxHoras = document.getElementById('chartActividadHoraria');
-    if (ctxHoras && labelsHoras.length) {
-      new Chart(ctxHoras, {
-        type: 'bar',
-        data: {
-          labels: labelsHoras,
-          datasets: [
-            {
-              label: 'Pedidos',
-              data: valuesHoras,
-              backgroundColor: '#0EA5A8',
-              borderRadius: 8,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 },
-            },
-          },
-        },
-      });
-    }
-  })();
-</script>
 {% endblock %}

@@ -1,21 +1,14 @@
-{% extends "appbuilder/base.html" %}
+{% extends "admin_layout.html" %}
 
-{% block content %}
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
 <style>
-    .navbar,
-    .navbar-inverse,
-    .navbar-fixed-top {
-        display: none !important;
-    }
-
-    html, body {
-        margin: 0;
-        padding: 0 !important;
-        min-height: 100%;
-        background: #eef1f5;
-        font-family: Arial, sans-serif;
-    }
-
     .pos-page {
         min-height: 100vh;
         display: grid;
@@ -46,15 +39,6 @@
         margin: 7px 0 0;
         color: #5f6e7c;
         font-weight: 600;
-    }
-
-    .btn-dashboard {
-        background: #10263f;
-        color: #ffffff;
-        padding: 12px 18px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 800;
     }
 
     .btn-dashboard:hover {
@@ -164,9 +148,6 @@
 
     .product-img {
         height: 135px;
-        background:
-            linear-gradient(rgba(16,38,63,0.12), rgba(16,38,63,0.12)),
-            url("https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=700&q=80");
         background-size: cover;
         background-position: center;
     }
@@ -352,8 +333,6 @@
                 <h1>Realizar venta</h1>
                 <p>Selecciona productos disponibles y arma el pedido del cliente.</p>
             </div>
-
-            <a class="btn-dashboard" href="/dashboard/">Volver al dashboard</a>
         </div>
 
         <section class="buyer-card">
@@ -407,7 +386,23 @@
                     data-price="{{ producto.precio }}"
                     data-stock="{{ producto.stock }}"
                 >
-                    <div class="product-img"></div>
+
+                    {% set categoria_nombre = producto.categoria.nombre|lower if producto.categoria else '' %}
+
+                    {% if 'helado' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80' %}
+                    {% elif 'fria' in categoria_nombre or 'fría' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=800&q=80' %}
+                    {% elif 'caliente' in categoria_nombre or 'cafe' in categoria_nombre or 'café' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80' %}
+                    {% elif 'postre' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80' %}
+                    {% else %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=800&q=80' %}
+                    {% endif %}
+
+<div class="product-img" style="background-image: linear-gradient(rgba(16,38,63,0.10), rgba(16,38,63,0.10)), url('{{ imagen_producto }}');"></div>
+
 
                     <div class="product-info">
                         <h4>{{ producto.nombre }}</h4>

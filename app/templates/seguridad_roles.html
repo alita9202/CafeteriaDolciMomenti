@@ -1,0 +1,276 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .seguridad-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .seguridad-header {
+        margin-bottom: 24px;
+    }
+
+    .seguridad-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .seguridad-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .actions-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .actions-row h2 {
+        margin: 0;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .btn-admin {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #10263f;
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-admin:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .rol-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
+    }
+
+    .rol-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .rol-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        background: #eef3f7;
+        color: #10263f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        flex-shrink: 0;
+    }
+
+    .rol-card h3 {
+        margin: 0 0 8px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .rol-card p {
+        margin: 0;
+        color: #647485;
+        line-height: 1.6;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .rol-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding-top: 16px;
+        margin-top: 16px;
+        border-top: 1px solid #edf0f3;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef3f7;
+        color: #10263f;
+        margin: 2px;
+    }
+
+    .btn-action {
+        color: #10263f;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-action:hover {
+        color: #173553;
+        text-decoration: underline;
+    }
+
+    .note-box {
+        margin-top: 24px;
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-left: 4px solid #10263f;
+        border-radius: 10px;
+        padding: 18px;
+        color: #34495e;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 1000px) {
+        .roles-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 800px) {
+        .summary-grid,
+        .roles-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .seguridad-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="seguridad-page">
+    <div class="seguridad-header">
+        <h1>Roles y permisos</h1>
+        <p>Consulta los roles configurados y la relación de usuarios asignados dentro del sistema.</p>
+    </div>
+
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Total roles</span>
+            <strong>{{ total_roles }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Gestión de seguridad</span>
+            <strong>Activa</strong>
+        </div>
+    </section>
+
+    <div class="actions-row">
+        <h2>Roles del sistema</h2>
+
+        <a class="btn-admin" href="/roles/list/">
+            <i class="bi bi-shield-check"></i> Gestionar roles
+        </a>
+    </div>
+
+    <div class="roles-grid">
+        {% for item in roles_info %}
+        <article class="rol-card">
+            <div class="rol-top">
+                <div>
+                    <h3>{{ item.rol.name }}</h3>
+                    <p>
+                        Rol utilizado para controlar accesos y permisos dentro del sistema.
+                    </p>
+                </div>
+
+                <div class="rol-icon">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+            </div>
+
+            <div>
+                <span class="pill">{{ item.total_usuarios }} usuarios</span>
+                <span class="pill">{{ item.total_permisos }} permisos</span>
+            </div>
+
+            <div class="rol-meta">
+                <span class="pill">ID #{{ item.rol.id }}</span>
+
+                <a class="btn-action" href="/roles/edit/{{ item.rol.id }}">
+                    Editar
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="note-box">
+        La administración avanzada de permisos se conserva mediante Flask-AppBuilder para no afectar el inicio de sesión,
+        la seguridad interna ni la asignación real de accesos del sistema.
+    </div>
+</div>
+{% endblock %}

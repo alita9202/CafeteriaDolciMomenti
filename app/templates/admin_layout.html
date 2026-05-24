@@ -1,0 +1,329 @@
+{% extends "appbuilder/base.html" %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0 !important;
+        width: 100%;
+        min-height: 100%;
+        background: #f4f6f8;
+        font-family: 'Nunito Sans', sans-serif;
+        overflow-x: hidden;
+    }
+
+    .container,
+    .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .admin-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        background: #f4f6f8;
+    }
+
+    .admin-sidebar {
+        background: #111c2b;
+        color: #ffffff;
+        padding: 26px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: 0.25s ease;
+    }
+
+    .admin-shell.collapsed {
+        grid-template-columns: 74px 1fr;
+    }
+
+    .admin-shell.collapsed .admin-sidebar {
+        padding: 24px 12px;
+    }
+
+    .admin-shell.collapsed .brand small,
+    .admin-shell.collapsed .brand h2,
+    .admin-shell.collapsed .menu-text,
+    .admin-shell.collapsed .submenu,
+    .admin-shell.collapsed .logout-text {
+        display: none;
+    }
+
+    .brand {
+        margin-bottom: 28px;
+    }
+
+    .brand small {
+        display: block;
+        color: #91a1b3;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .brand h2 {
+        margin: 0;
+        font-family: 'Great Vibes', cursive;
+        font-size: 36px;
+        font-weight: 400;
+        color: #f5f1ea;
+    }
+
+    .sidebar-toggle {
+        width: 100%;
+        height: 40px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.08);
+        color: #ffffff;
+        border-radius: 8px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        cursor: pointer;
+    }
+
+    .admin-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .admin-menu a,
+    .menu-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 12px;
+        color: #b8c4d1;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s ease;
+        cursor: pointer;
+    }
+
+    .admin-menu a:hover,
+    .menu-title:hover,
+    .admin-menu a.active {
+        background: #f5f1ea;
+        color: #10263f;
+        text-decoration: none;
+    }
+
+    .admin-menu i,
+    .menu-title i {
+        min-width: 20px;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .menu-group:hover .submenu {
+        display: flex;
+    }
+
+    .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        margin: 5px 0 8px 20px;
+        padding-left: 12px;
+        border-left: 1px solid rgba(245, 241, 234, 0.18);
+    }
+
+    .submenu a {
+        padding: 8px 10px !important;
+        font-size: 13px;
+        border-radius: 6px !important;
+        color: #9fb0c2 !important;
+        background: transparent !important;
+    }
+
+    .submenu a:hover {
+        background: #f5f1ea !important;
+        color: #10263f !important;
+    }
+
+    .logout-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #f5f1ea;
+        color: #10263f;
+        border-radius: 8px;
+        padding: 11px 12px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .logout-link:hover {
+        background: #ffffff;
+        color: #10263f;
+        text-decoration: none;
+    }
+
+    .admin-content {
+        min-width: 0;
+        padding: 34px;
+        background: #f4f6f8;
+    }
+
+    .mobile-sidebar-btn {
+        display: none;
+        background: #10263f;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    @media (max-width: 800px) {
+        .admin-shell {
+            display: block;
+        }
+
+        .admin-sidebar {
+            display: none;
+        }
+
+        .admin-sidebar.open {
+            display: block;
+        }
+
+        .mobile-sidebar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-content {
+            padding: 22px;
+        }
+    }
+</style>
+
+<div class="admin-shell" id="adminShell">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div>
+            <div class="brand">
+                <small>Sistema de gestión</small>
+                <h2>Dolcimomenti</h2>
+            </div>
+
+            <button class="sidebar-toggle" type="button" id="sidebarToggle">
+                <i class="bi bi-layout-sidebar-inset"></i>
+                <span class="menu-text">Contraer menú</span>
+            </button>
+
+            <nav class="admin-menu">
+                <a href="/dashboard/">
+                    <i class="bi bi-house-door"></i>
+                    <span class="menu-text">Menú principal</span>
+                </a>
+
+                <div class="menu-group">
+                    <div class="menu-title">
+                        <i class="bi bi-shield-lock"></i>
+                        <span class="menu-text">Seguridad</span>
+                    </div>
+                    <div class="submenu">
+                        <a href="/seguridad/usuarios/"><i class="bi bi-person"></i> Usuarios</a>
+                        <a href="/seguridad/roles/"><i class="bi bi-people"></i> Roles y permisos</a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-title">
+                        <i class="bi bi-grid"></i>
+                        <span class="menu-text">Catálogo</span>
+                    </div>
+                    <div class="submenu">
+                        <a href="/catalogo/productos/"><i class="bi bi-cup-hot"></i> Productos</a>
+                        <a href="/catalogo/categorias/"><i class="bi bi-tags"></i> Categorías</a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-title">
+                        <i class="bi bi-cart-check"></i>
+                        <span class="menu-text">Ventas</span>
+                    </div>
+                    <div class="submenu">
+                        <a href="/ventas/nueva/"><i class="bi bi-plus-circle"></i> Realizar venta</a>
+                        <a href="/ventas/buscar/"><i class="bi bi-search"></i> Buscar pedido</a>
+                        <a href="/ventas/clientes/"><i class="bi bi-person-lines-fill"></i> Clientes</a>
+                        <a href="/ventas/pagos/"><i class="bi bi-cash-coin"></i> Pagos</a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-title">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span class="menu-text">Reportes</span>
+                    </div>
+                    <div class="submenu">
+                        <a href="/reportes/"><i class="bi bi-layout-text-window"></i> Centro de reportes</a>
+                        <a href="/reporte-general/"><i class="bi bi-cpu"></i> General IA</a>
+                        <a href="/reporte-tendencias/"><i class="bi bi-graph-up"></i> Tendencias IA</a>
+                        <a href="/reporte-prediccion/"><i class="bi bi-lightbulb"></i> Predicción IA</a>
+                        <a href="/graficas/"><i class="bi bi-pie-chart"></i> Gráficas</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <a class="logout-link" href="/logout/">
+            <i class="bi bi-box-arrow-right"></i>
+            <span class="logout-text">Cerrar sesión</span>
+        </a>
+    </aside>
+
+    <main class="admin-content">
+        <button class="mobile-sidebar-btn" type="button" id="mobileSidebarBtn">
+            <i class="bi bi-list"></i> Menú
+        </button>
+
+        {% block page_content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+    const adminShell = document.getElementById("adminShell");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const mobileSidebarBtn = document.getElementById("mobileSidebarBtn");
+    const adminSidebar = document.getElementById("adminSidebar");
+
+    if (sidebarToggle && adminShell) {
+        sidebarToggle.addEventListener("click", () => {
+            adminShell.classList.toggle("collapsed");
+        });
+    }
+
+    if (mobileSidebarBtn && adminSidebar) {
+        mobileSidebarBtn.addEventListener("click", () => {
+            adminSidebar.classList.toggle("open");
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,328 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .catalogo-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .catalogo-header {
+        margin-bottom: 24px;
+    }
+
+    .catalogo-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .catalogo-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .actions-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .actions-row h2 {
+        margin: 0;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .btn-admin {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #10263f;
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-admin:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .productos-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+
+    .producto-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .producto-img {
+        height: 135px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .producto-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .producto-body h3 {
+        margin: 0;
+        color: #10263f;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .producto-desc {
+        margin: 0;
+        color: #647485;
+        line-height: 1.5;
+        font-size: 14px;
+        font-weight: 600;
+        min-height: 42px;
+    }
+
+    .producto-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .precio {
+        color: #10263f;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef3f7;
+        color: #10263f;
+    }
+
+    .pill-ok {
+        background: #e8f6ef;
+        color: #247a4b;
+    }
+
+    .pill-danger {
+        background: #fdecec;
+        color: #a93939;
+    }
+
+    .producto-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 10px;
+        border-top: 1px solid #edf0f3;
+        gap: 8px;
+    }
+
+    .btn-edit {
+        color: #10263f;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-edit:hover {
+        color: #173553;
+        text-decoration: underline;
+    }
+
+    .empty-message {
+        padding: 28px;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        color: #6b7786;
+        font-weight: 600;
+        text-align: center;
+        background: #fafbfc;
+    }
+
+    @media (max-width: 1100px) {
+        .productos-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 850px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .productos-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .actions-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .productos-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .catalogo-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="catalogo-page">
+    <div class="catalogo-header">
+        <h1>Productos</h1>
+        <p>Consulta el catálogo de productos disponibles, precios, stock y estado de venta.</p>
+    </div>
+
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Total productos</span>
+            <strong>{{ total_productos }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Disponibles</span>
+            <strong>{{ productos_disponibles }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Agotados</span>
+            <strong>{{ productos_agotados }}</strong>
+        </div>
+    </section>
+
+    <div class="actions-row">
+        <h2>Catálogo actual</h2>
+
+        <a class="btn-admin" href="/catalogo/productos/nuevo/">
+            <i class="bi bi-plus-circle"></i> Nuevo producto
+        </a>
+    </div>
+
+    {% if productos %}
+    <div class="productos-grid">
+        {% for producto in productos %}
+        <article class="producto-card">
+            {% set categoria_nombre = producto.categoria.nombre|lower if producto.categoria else '' %}
+
+            {% if 'helado' in categoria_nombre %}
+                {% set imagen_producto = 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80' %}
+            {% elif 'fria' in categoria_nombre or 'fría' in categoria_nombre %}
+                {% set imagen_producto = 'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=800&q=80' %}
+            {% elif 'caliente' in categoria_nombre or 'cafe' in categoria_nombre or 'café' in categoria_nombre %}
+                {% set imagen_producto = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80' %}
+            {% elif 'postre' in categoria_nombre %}
+                {% set imagen_producto = 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80' %}
+            {% else %}
+                {% set imagen_producto = 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=800&q=80' %}
+            {% endif %}
+
+            <div class="producto-img" style="background-image: linear-gradient(rgba(16,38,63,0.10), rgba(16,38,63,0.10)), url('{{ imagen_producto }}');"></div>
+
+            <div class="producto-body">
+                <div>
+                    <h3>{{ producto.nombre }}</h3>
+                    <p class="producto-desc">
+                        {{ producto.descripcion or 'Producto registrado en el catálogo.' }}
+                    </p>
+                </div>
+
+                <div>
+                    {% if producto.categoria %}
+                        <span class="pill">{{ producto.categoria.nombre }}</span>
+                    {% else %}
+                        <span class="pill">Sin categoría</span>
+                    {% endif %}
+                </div>
+
+                <div class="producto-meta">
+                    <span class="precio">{{ producto.precio }} Bs</span>
+
+                    {% if producto.stock <= 0 %}
+                        <span class="pill pill-danger">Agotado</span>
+                    {% else %}
+                        <span class="pill pill-ok">{{ producto.stock }} disp.</span>
+                    {% endif %}
+                </div>
+
+                <div class="producto-footer">
+                    <span class="pill">ID #{{ producto.id }}</span>
+                    <a class="btn-edit" href="/productomodelview/edit/{{ producto.id }}">
+                        Editar
+                    </a>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-message">
+        Todavía no existen productos registrados.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

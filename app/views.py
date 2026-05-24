@@ -4,14 +4,12 @@ from .extensions import appbuilder
 
 class UsuariosProtegidoView(BaseView):
     route_base = "/usuarios"
-
     @expose("/")
-    @has_access
     def index(self):
-        return self.render_template(
-            "acceso_protegido.html",
-            title="Acceso Protegido"
-        )
+        if current_user.is_authenticated:
+            return redirect("/dashboard/")
+
+        return self.render_template("appbuilder/index.html")
 
 
 appbuilder.add_view_no_menu(UsuariosProtegidoView())
@@ -19,11 +17,13 @@ appbuilder.add_view_no_menu(UsuariosProtegidoView())
 
 # Product CRUD using Flask-AppBuilder
 from flask import jsonify, request, redirect, url_for
+from flask_login import current_user
 from datetime import datetime
 from flask_appbuilder import ModelView
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
 from flask_appbuilder.filemanager import ImageManager
+from flask_appbuilder.security.sqla.models import User, Role
 from markupsafe import Markup
 from .models import Producto, Categoria, Cliente, Pedido, PedidoItem, Pago
 from decimal import Decimal
@@ -992,3 +992,446 @@ class FacturaPedidoView(BaseView):
 
 appbuilder.add_view_no_menu(FacturaPedidoView())
 
+# -----------------------------
+# VENTAS - HISTORIAL DE PAGOS
+# -----------------------------
+
+class HistorialPagosView(BaseView):
+    route_base = "/ventas/pagos"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        pagos = db.session.query(Pago).order_by(Pago.fecha.desc()).limit(50).all()
+
+        return self.render_template(
+            "ventas_pagos.html",
+            pagos=pagos
+        )
+
+
+appbuilder.add_view_no_menu(HistorialPagosView())
+
+# -----------------------------
+# VENTAS - CLIENTES
+# -----------------------------
+
+class ClientesVentaView(BaseView):
+    route_base = "/ventas/clientes"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        clientes = db.session.query(Cliente).order_by(Cliente.creado_en.desc()).limit(100).all()
+
+        total_clientes = db.session.query(Cliente).count()
+        clientes_factura = db.session.query(Cliente).filter(Cliente.requiere_factura == True).count()
+
+        return self.render_template(
+            "ventas_clientes.html",
+            clientes=clientes,
+            total_clientes=total_clientes,
+            clientes_factura=clientes_factura
+        )
+
+
+appbuilder.add_view_no_menu(ClientesVentaView())
+
+# -----------------------------
+# CATÁLOGO - PRODUCTOS
+# -----------------------------
+
+class CatalogoProductosView(BaseView):
+    route_base = "/catalogo/productos"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        productos = db.session.query(Producto).order_by(Producto.nombre.asc()).all()
+
+        total_productos = db.session.query(Producto).count()
+        productos_agotados = db.session.query(Producto).filter(Producto.stock <= 0).count()
+        productos_disponibles = db.session.query(Producto).filter(Producto.stock > 0).count()
+
+        return self.render_template(
+            "catalogo_productos.html",
+            productos=productos,
+            total_productos=total_productos,
+            productos_agotados=productos_agotados,
+            productos_disponibles=productos_disponibles
+        )
+
+    @expose("/nuevo/", methods=["GET", "POST"])
+    @has_access
+    def nuevo(self):
+        categorias = db.session.query(Categoria).filter(
+            Categoria.activa == True
+        ).order_by(Categoria.nombre.asc()).all()
+
+        if request.method == "POST":
+            try:
+                nombre = request.form.get("nombre")
+                descripcion = request.form.get("descripcion")
+                precio = request.form.get("precio")
+                stock = request.form.get("stock")
+                categoria_id = request.form.get("categoria_id")
+
+                if not nombre or not precio or stock is None:
+                    return self.render_template(
+                        "catalogo_producto_form.html",
+                        categorias=categorias,
+                        error="Debe completar nombre, precio y stock."
+                    )
+
+                producto = Producto(
+                    nombre=nombre,
+                    descripcion=descripcion,
+                    precio=precio,
+                    stock=int(stock),
+                    categoria_id=int(categoria_id) if categoria_id else None
+                )
+
+                db.session.add(producto)
+                db.session.commit()
+
+                return redirect("/catalogo/productos/")
+
+            except Exception as error:
+                db.session.rollback()
+
+                return self.render_template(
+                    "catalogo_producto_form.html",
+                    categorias=categorias,
+                    error=str(error)
+                )
+
+        return self.render_template(
+            "catalogo_producto_form.html",
+            categorias=categorias,
+            error=None
+        )
+
+
+appbuilder.add_view_no_menu(CatalogoProductosView())
+
+# -----------------------------
+# CATÁLOGO - CATEGORÍAS
+# -----------------------------
+
+class CatalogoCategoriasView(BaseView):
+    route_base = "/catalogo/categorias"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        categorias = db.session.query(Categoria).order_by(Categoria.nombre.asc()).all()
+
+        total_categorias = db.session.query(Categoria).count()
+        categorias_activas = db.session.query(Categoria).filter(Categoria.activa == True).count()
+
+        categorias_info = []
+
+        for categoria in categorias:
+            total_productos = db.session.query(Producto).filter(
+                Producto.categoria_id == categoria.id
+            ).count()
+
+            categorias_info.append({
+                "categoria": categoria,
+                "total_productos": total_productos
+            })
+
+        return self.render_template(
+            "catalogo_categorias.html",
+            categorias_info=categorias_info,
+            total_categorias=total_categorias,
+            categorias_activas=categorias_activas
+        )
+
+    @expose("/nueva/", methods=["GET", "POST"])
+    @has_access
+    def nueva(self):
+        if request.method == "POST":
+            try:
+                nombre = request.form.get("nombre")
+                descripcion = request.form.get("descripcion")
+                activa = True if request.form.get("activa") == "on" else False
+
+                if not nombre:
+                    return self.render_template(
+                        "catalogo_categoria_form.html",
+                        error="Debe completar el nombre de la categoría."
+                    )
+
+                categoria = Categoria(
+                    nombre=nombre,
+                    descripcion=descripcion,
+                    activa=activa
+                )
+
+                db.session.add(categoria)
+                db.session.commit()
+
+                return redirect("/catalogo/categorias/")
+
+            except Exception as error:
+                db.session.rollback()
+
+                return self.render_template(
+                    "catalogo_categoria_form.html",
+                    error=str(error)
+                )
+
+        return self.render_template(
+            "catalogo_categoria_form.html",
+            error=None
+        )
+
+
+appbuilder.add_view_no_menu(CatalogoCategoriasView())
+
+
+# -----------------------------
+# SEGURIDAD - USUARIOS
+# -----------------------------
+
+class SeguridadUsuariosView(BaseView):
+    route_base = "/seguridad/usuarios"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        usuarios = db.session.query(User).order_by(User.id.desc()).all()
+        roles = db.session.query(Role).order_by(Role.name.asc()).all()
+
+        total_usuarios = db.session.query(User).count()
+        usuarios_activos = db.session.query(User).filter(User.active == True).count()
+        total_roles = db.session.query(Role).count()
+
+        return self.render_template(
+            "seguridad_usuarios.html",
+            usuarios=usuarios,
+            roles=roles,
+            total_usuarios=total_usuarios,
+            usuarios_activos=usuarios_activos,
+            total_roles=total_roles
+        )
+
+    @expose("/nuevo/", methods=["GET", "POST"])
+    @has_access
+    def nuevo(self):
+        roles = db.session.query(Role).order_by(Role.name.asc()).all()
+
+        if request.method == "POST":
+            try:
+                username = request.form.get("username")
+                first_name = request.form.get("first_name")
+                last_name = request.form.get("last_name")
+                email = request.form.get("email")
+                password = request.form.get("password")
+                role_ids = request.form.getlist("roles")
+
+                if not username or not first_name or not last_name or not email or not password:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=None,
+                        error="Debe completar usuario, nombre, apellido, email y contraseña."
+                    )
+
+                if not role_ids:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=None,
+                        error="Debe seleccionar al menos un rol."
+                    )
+
+                usuario_existente = db.session.query(User).filter(
+                    User.username == username
+                ).first()
+
+                if usuario_existente:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=None,
+                        error="Ya existe un usuario con ese nombre de usuario."
+                    )
+
+                email_existente = db.session.query(User).filter(
+                    User.email == email
+                ).first()
+
+                if email_existente:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=None,
+                        error="Ya existe un usuario con ese correo electrónico."
+                    )
+
+                roles_seleccionados = db.session.query(Role).filter(
+                    Role.id.in_(role_ids)
+                ).all()
+
+                nuevo_usuario = appbuilder.sm.add_user(
+                    username=username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    role=roles_seleccionados,
+                    password=password
+                )
+
+                if not nuevo_usuario:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=None,
+                        error="No se pudo crear el usuario. Revise los datos ingresados."
+                    )
+
+                db.session.commit()
+                return redirect("/seguridad/usuarios/")
+
+            except Exception as error:
+                db.session.rollback()
+
+                return self.render_template(
+                    "seguridad_usuario_form.html",
+                    roles=roles,
+                    usuario=None,
+                    error=str(error)
+                )
+
+        return self.render_template(
+            "seguridad_usuario_form.html",
+            roles=roles,
+            usuario=None,
+            error=None
+        )
+
+    @expose("/editar/<int:usuario_id>/", methods=["GET", "POST"])
+    @has_access
+    def editar(self, usuario_id):
+        usuario = db.session.query(User).get(usuario_id)
+        roles = db.session.query(Role).order_by(Role.name.asc()).all()
+
+        if not usuario:
+            return "Usuario no encontrado", 404
+
+        if request.method == "POST":
+            try:
+                usuario.username = request.form.get("username")
+                usuario.first_name = request.form.get("first_name")
+                usuario.last_name = request.form.get("last_name")
+                usuario.email = request.form.get("email")
+                usuario.active = True if request.form.get("active") == "on" else False
+
+                role_ids = request.form.getlist("roles")
+
+                if not usuario.username or not usuario.first_name or not usuario.last_name or not usuario.email:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=usuario,
+                        error="Debe completar usuario, nombre, apellido y email."
+                    )
+
+                if not role_ids:
+                    return self.render_template(
+                        "seguridad_usuario_form.html",
+                        roles=roles,
+                        usuario=usuario,
+                        error="Debe seleccionar al menos un rol."
+                    )
+
+                roles_seleccionados = db.session.query(Role).filter(
+                    Role.id.in_(role_ids)
+                ).all()
+
+                usuario.roles = roles_seleccionados
+
+                nueva_password = request.form.get("password")
+
+                if nueva_password:
+                    usuario.password = appbuilder.sm.get_password_hash(nueva_password)
+
+                db.session.add(usuario)
+                db.session.commit()
+
+                return redirect("/seguridad/usuarios/")
+
+            except Exception as error:
+                db.session.rollback()
+
+                return self.render_template(
+                    "seguridad_usuario_form.html",
+                    roles=roles,
+                    usuario=usuario,
+                    error=str(error)
+                )
+
+        return self.render_template(
+            "seguridad_usuario_form.html",
+            roles=roles,
+            usuario=usuario,
+            error=None
+        )
+
+    @expose("/desactivar/<int:usuario_id>/")
+    @has_access
+    def desactivar(self, usuario_id):
+        usuario = db.session.query(User).get(usuario_id)
+
+        if not usuario:
+            return "Usuario no encontrado", 404
+
+        usuario.active = False
+        db.session.add(usuario)
+        db.session.commit()
+
+        return redirect("/seguridad/usuarios/")
+
+
+appbuilder.add_view_no_menu(SeguridadUsuariosView())
+
+# -----------------------------
+# SEGURIDAD - ROLES Y PERMISOS
+# -----------------------------
+
+class SeguridadRolesView(BaseView):
+    route_base = "/seguridad/roles"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        roles = db.session.query(Role).order_by(Role.name.asc()).all()
+        usuarios = db.session.query(User).all()
+
+        roles_info = []
+
+        for rol in roles:
+            total_usuarios = 0
+
+            for usuario in usuarios:
+                if rol in usuario.roles:
+                    total_usuarios += 1
+
+            total_permisos = len(rol.permissions) if hasattr(rol, "permissions") and rol.permissions else 0
+
+            roles_info.append({
+                "rol": rol,
+                "total_usuarios": total_usuarios,
+                "total_permisos": total_permisos
+            })
+
+        return self.render_template(
+            "seguridad_roles.html",
+            roles_info=roles_info,
+            total_roles=len(roles_info)
+        )
+
+
+appbuilder.add_view_no_menu(SeguridadRolesView())

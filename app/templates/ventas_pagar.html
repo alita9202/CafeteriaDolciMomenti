@@ -1,5 +1,12 @@
 {% extends "appbuilder/base.html" %}
 
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <style>
     .navbar,
@@ -11,7 +18,7 @@
     body {
         background: #eef1f5;
         padding-top: 0 !important;
-        font-family: Arial, sans-serif;
+        font-family: 'Nunito Sans',sans-serif;
     }
 
     .pago-page {
