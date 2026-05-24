@@ -712,7 +712,14 @@ class NuevaVentaView(BaseView):
     @expose("/")
     @has_access
     def index(self):
-        return self.render_template("ventas_nueva.html")
+        categorias = db.session.query(Categoria).order_by(Categoria.nombre.asc()).all()
+        productos = db.session.query(Producto).order_by(Producto.nombre.asc()).all()
+
+        return self.render_template(
+            "ventas_nueva.html",
+            categorias=categorias,
+            productos=productos
+        )
 
 
 appbuilder.add_view_no_menu(NuevaVentaView())
