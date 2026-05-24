@@ -25,6 +25,8 @@ from flask_appbuilder.upload import ImageUploadField
 from flask_appbuilder.filemanager import ImageManager
 from markupsafe import Markup
 from .models import Producto, Categoria, Cliente, Pedido, PedidoItem, Pago
+from decimal import Decimal
+
 
 class CategoriaModelView(ModelView):
     datamodel = SQLAInterface(Categoria)
@@ -720,6 +722,108 @@ class NuevaVentaView(BaseView):
             categorias=categorias,
             productos=productos
         )
+
+    @expose("/confirmar", methods=["POST"])
+    @has_access
+    def confirmar(self):
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "ok": False,
+                "mensaje": "No se recibieron datos de la venta."
+            }), 400
+
+        productos = data.get("productos", [])
+        comprador = data.get("comprador", {})
+
+        if not productos:
+            return jsonify({
+                "ok": False,
+                "mensaje": "Debe seleccionar al menos un producto."
+            }), 400
+
+        try:
+            nombre_cliente = comprador.get("nombre") or "Cliente ocasional"
+            telefono_cliente = comprador.get("telefono") or None
+
+            cliente = Cliente(
+                nombre=nombre_cliente,
+                telefono=telefono_cliente
+            )
+
+            if hasattr(Cliente, "requiere_factura"):
+                cliente.requiere_factura = comprador.get("requiere_factura", False)
+
+            if hasattr(Cliente, "nit"):
+                cliente.nit = comprador.get("nit") or None
+
+            if hasattr(Cliente, "razon_social"):
+                cliente.razon_social = comprador.get("razon_social") or None
+
+            db.session.add(cliente)
+            db.session.flush()
+
+            pedido = Pedido(
+                cliente=cliente,
+                estado="pendiente",
+                total=Decimal("0.00")
+            )
+
+            db.session.add(pedido)
+            db.session.flush()
+
+            total_pedido = Decimal("0.00")
+
+            for item in productos:
+                producto_id = int(item.get("id"))
+                cantidad = int(item.get("cantidad"))
+
+                producto = db.session.query(Producto).get(producto_id)
+
+                if not producto:
+                    raise Exception("Uno de los productos seleccionados no existe.")
+
+                if producto.stock < cantidad:
+                    raise Exception(f"No hay stock suficiente para {producto.nombre}.")
+
+                precio = Decimal(producto.precio)
+                subtotal = precio * cantidad
+
+                detalle = PedidoItem(
+                    pedido=pedido,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio,
+                    subtotal=subtotal
+                )
+
+                producto.stock = producto.stock - cantidad
+
+                db.session.add(detalle)
+                db.session.add(producto)
+
+                total_pedido += subtotal
+
+            pedido.total = total_pedido
+            db.session.add(pedido)
+
+            db.session.commit()
+
+            return jsonify({
+                "ok": True,
+                "mensaje": "Venta registrada correctamente.",
+                "pedido_id": pedido.id,
+                "total": str(total_pedido)
+            })
+
+        except Exception as error:
+            db.session.rollback()
+
+            return jsonify({
+                "ok": False,
+                "mensaje": str(error)
+            }), 500
 
 
 appbuilder.add_view_no_menu(NuevaVentaView())

@@ -401,6 +401,7 @@
                 {% for producto in productos %}
                 <div
                     class="product-card {% if producto.stock <= 0 %}agotado{% endif %}"
+                    data-id="{{ producto.id }}"
                     data-category="{{ producto.categoria_id }}"
                     data-name="{{ producto.nombre }}"
                     data-price="{{ producto.precio }}"
@@ -451,7 +452,7 @@
             </div>
         </div>
 
-        <button class="btn-confirm" type="button">
+        <button class="btn-confirm" type="button" id="btnConfirmarVenta">
             Confirmar venta
         </button>
 
@@ -510,6 +511,7 @@
                 }
             } else {
                 cart.push({
+                    id: Number(card.dataset.id),
                     name,
                     price,
                     quantity: 1
@@ -550,5 +552,65 @@
         cartCount.textContent = count;
         cartTotal.textContent = total.toFixed(2) + " Bs";
     }
+
+    const btnConfirmarVenta = document.getElementById("btnConfirmarVenta");
+
+    btnConfirmarVenta.addEventListener("click", async () => {
+        if (cart.length === 0) {
+            alert("Debe seleccionar al menos un producto.");
+            return;
+        }
+
+        const nombre = document.querySelector('input[placeholder="Cliente ocasional"]').value || "Cliente ocasional";
+        const telefono = document.querySelector('input[placeholder="Opcional"]').value || "";
+        const requiereFactura = document.querySelector("select").value === "Sí";
+        const nitRazon = document.querySelector('input[placeholder="Solo si requiere factura"]').value || "";
+
+        const payload = {
+            comprador: {
+                nombre: nombre,
+                telefono: telefono,
+                requiere_factura: requiereFactura,
+                nit: requiereFactura ? nitRazon : "",
+                razon_social: requiereFactura ? nombre : ""
+            },
+            productos: cart.map(item => ({
+                id: item.id,
+                cantidad: item.quantity
+            }))
+        };
+
+        btnConfirmarVenta.disabled = true;
+        btnConfirmarVenta.textContent = "Registrando venta...";
+
+        try {
+            const response = await fetch("/ventas/nueva/confirmar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!result.ok) {
+                alert(result.mensaje || "No se pudo registrar la venta.");
+                btnConfirmarVenta.disabled = false;
+                btnConfirmarVenta.textContent = "Confirmar venta";
+                return;
+            }
+
+            alert(`Venta registrada correctamente. Pedido #${result.pedido_id}. Total: ${result.total} Bs`);
+
+            window.location.href = "/ventas/buscar/";
+
+        } catch (error) {
+            alert("Ocurrió un error al registrar la venta.");
+            btnConfirmarVenta.disabled = false;
+            btnConfirmarVenta.textContent = "Confirmar venta";
+        }
+    });
+
 </script>
 {% endblock %}
