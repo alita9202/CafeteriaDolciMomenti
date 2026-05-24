@@ -963,3 +963,32 @@ class ConfirmarPagoView(BaseView):
 
 
 appbuilder.add_view_no_menu(ConfirmarPagoView())
+
+# -----------------------------
+# FACTURACIÓN - IMPRESIÓN POR PEDIDO
+# -----------------------------
+
+class FacturaPedidoView(BaseView):
+    route_base = "/factura/pedido"
+
+    @expose("/<int:pedido_id>/")
+    @has_access
+    def index(self, pedido_id):
+        pedido = db.session.query(Pedido).get(pedido_id)
+
+        if not pedido:
+            return "Pedido no encontrado", 404
+
+        pago = None
+        if hasattr(pedido, "pagos") and pedido.pagos:
+            pago = pedido.pagos[-1]
+
+        return self.render_template(
+            "factura_pedido.html",
+            pedido=pedido,
+            pago=pago
+        )
+
+
+appbuilder.add_view_no_menu(FacturaPedidoView())
+

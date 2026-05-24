@@ -297,7 +297,14 @@
             }
 
             alert("Pago confirmado correctamente. El pedido fue marcado como entregado.");
-            window.location.href = "/ventas/buscar/";
+
+            const requiereFactura = "{{ 'true' if pedido.cliente and pedido.cliente.requiere_factura else 'false' }}";
+
+            if (requiereFactura === "true") {
+                window.location.href = "/factura/pedido/{{ pedido.id }}/";
+            } else {
+                window.location.href = "/ventas/buscar/";
+            }
 
         } catch (error) {
             alert("Ocurrió un error al confirmar el pago.");

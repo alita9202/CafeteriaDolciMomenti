@@ -63,6 +63,11 @@ class Cliente(Model):
     email = Column(String(150), nullable=True, unique=False)
     telefono = Column(String(50), nullable=True)
     direccion = Column(Text, nullable=True)
+    
+    requiere_factura = Column(Boolean, default=False, nullable=False)
+    nit = Column(String(30), nullable=True)
+    razon_social = Column(String(150), nullable=True)
+
     creado_en = Column(DateTime, default=datetime.now, nullable=False)
 
     pedidos = relationship(
