@@ -111,6 +111,53 @@
         text-decoration: none;
     }
 
+    .menu-group {
+        border-radius: 14px;
+    }
+
+    .menu-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 14px;
+        border-radius: 14px;
+        color: #b8c4d1;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .menu-title:hover {
+        background: rgba(245, 241, 234, 0.12);
+        color: #ffffff;
+    }
+
+    .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        margin: 6px 0 10px 18px;
+        padding-left: 12px;
+        border-left: 1px solid rgba(245, 241, 234, 0.18);
+    }
+
+    .menu-group:hover .submenu {
+        display: flex;
+    }
+
+    .submenu a {
+        padding: 10px 12px !important;
+        font-size: 13px;
+        border-radius: 10px !important;
+        color: #9fb0c2 !important;
+        background: transparent !important;
+    }
+
+    .submenu a:hover {
+        background: #f5f1ea !important;
+        color: #10263f !important;
+    }
+
     .logout-box a {
         display: block;
         text-align: center;
@@ -316,15 +363,46 @@
             </div>
 
             <nav class="menu">
+
                 <a class="active" href="/dashboard/">🏠 Dashboard</a>
-                <a href="/productomodelview/list/">☕ Productos</a>
-                <a href="/categoriamodelview/list/">🍨 Categorías</a>
-                <a href="/clientemodelview/list/">👥 Clientes</a>
-                <a href="/pedidomodelview/list/">🧾 Pedidos</a>
-                <a href="/pedidoitemmodelview/list/">🛒 Detalle pedidos</a>
-                <a href="/reportes/">📊 Reportes</a>
-                <a href="/graficas/">📈 Gráficas</a>
-                <a href="/ia/prueba/">🤖 IA</a>
+
+                <div class="menu-group">
+                    <div class="menu-title">⚙️ Seguridad</div>
+                    <div class="submenu">
+                        <a href="/users/list/">Usuarios</a>
+                        <a href="/roles/list/">Roles y permisos</a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-title">📦 Catálogo</div>
+                    <div class="submenu">
+                        <a href="/productomodelview/list/">Productos</a>
+                        <a href="/categoriamodelview/list/">Categorías</a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-title">🛒 Ventas</div>
+                    <div class="submenu">
+                        <a href="/ventas/nueva/">Realizar venta</a>
+                        <a href="/ventas/buscar/">Buscar pedido</a>
+                        <a href="/clientemodelview/list/">Clientes</a>
+                        <a href="/pagomodelview/list/">Pagos</a>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-title">📊 Reportes</div>
+                    <div class="submenu">
+                        <a href="/reportes/">Centro de reportes</a>
+                        <a href="/reporte-general/">Reporte general IA</a>
+                        <a href="/reporte-tendencias/">Reporte tendencias IA</a>
+                        <a href="/reporte-prediccion/">Reporte predicción IA</a>
+                        <a href="/graficas/">Gráficas</a>
+                    </div>
+                </div>
+
             </nav>
         </div>
 

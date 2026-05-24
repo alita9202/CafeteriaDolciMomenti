@@ -1,0 +1,78 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    body {
+        background: #eef1f5;
+        padding-top: 0 !important;
+    }
+
+    .venta-page {
+        min-height: 100vh;
+        padding: 40px;
+        font-family: Arial, sans-serif;
+    }
+
+    .venta-card {
+        background: white;
+        border-radius: 24px;
+        padding: 35px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+
+    .venta-card h1 {
+        margin: 0;
+        color: #10263f;
+        font-size: 36px;
+    }
+
+    .venta-card p {
+        color: #5f6e7c;
+        font-size: 16px;
+        margin-top: 12px;
+    }
+
+    .venta-actions {
+        margin-top: 28px;
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .venta-btn {
+        background: #10263f;
+        color: white;
+        padding: 13px 22px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .venta-btn:hover {
+        background: #173553;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div class="venta-page">
+    <div class="venta-card">
+        <h1>Realizar venta</h1>
+        <p>
+            Esta será la pantalla tipo punto de venta para registrar pedidos de forma visual,
+            seleccionar productos disponibles, calcular el total y confirmar el pago.
+        </p>
+
+        <div class="venta-actions">
+            <a class="venta-btn" href="/dashboard/">Volver al dashboard</a>
+            <a class="venta-btn" href="/ventas/buscar/">Buscar pedidos</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -18,7 +18,7 @@ appbuilder.add_view_no_menu(UsuariosProtegidoView())
 
 
 # Product CRUD using Flask-AppBuilder
-from flask import jsonify, request
+from flask import jsonify, request, redirect, url_for
 from flask_appbuilder import ModelView
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
@@ -700,3 +700,53 @@ class DashboardView(BaseView):
 
 
 appbuilder.add_view_no_menu(DashboardView())
+
+
+# -----------------------------
+# VENTAS - NUEVA VENTA
+# -----------------------------
+
+class NuevaVentaView(BaseView):
+    route_base = "/ventas/nueva"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        return self.render_template("ventas_nueva.html")
+
+
+appbuilder.add_view_no_menu(NuevaVentaView())
+
+# -----------------------------
+# VENTAS - BUSCAR PEDIDO
+# -----------------------------
+
+class BuscarPedidoView(BaseView):
+    route_base = "/ventas/buscar"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        busqueda = request.args.get("q", "").strip()
+
+        consulta = db.session.query(Pedido)
+
+        if busqueda:
+            consulta = consulta.join(Cliente, Pedido.cliente_id == Cliente.id).filter(
+                db.or_(
+                    Cliente.nombre.ilike(f"%{busqueda}%"),
+                    Pedido.estado.ilike(f"%{busqueda}%"),
+                    Pedido.id == busqueda if busqueda.isdigit() else False
+                )
+            )
+
+        pedidos = consulta.order_by(Pedido.id.desc()).limit(30).all()
+
+        return self.render_template(
+            "ventas_buscar.html",
+            pedidos=pedidos,
+            busqueda=busqueda
+        )
+
+
+appbuilder.add_view_no_menu(BuscarPedidoView())

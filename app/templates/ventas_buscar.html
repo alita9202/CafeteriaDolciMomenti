@@ -1,0 +1,197 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    body {
+        background: #eef1f5;
+        padding-top: 0 !important;
+    }
+
+    .buscar-page {
+        min-height: 100vh;
+        padding: 40px;
+        font-family: Arial, sans-serif;
+    }
+
+    .buscar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .buscar-header h1 {
+        margin: 0;
+        color: #10263f;
+        font-size: 34px;
+        font-weight: 800;
+    }
+
+    .buscar-header p {
+        margin: 8px 0 0;
+        color: #5f6e7c;
+    }
+
+    .btn-back {
+        background: #10263f;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .btn-back:hover {
+        background: #173553;
+        color: white;
+        text-decoration: none;
+    }
+
+    .buscar-card {
+        background: white;
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+
+    .search-form {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .search-form input {
+        flex: 1;
+        height: 46px;
+        border: 1px solid #dce3ea;
+        border-radius: 12px;
+        padding: 0 15px;
+        font-weight: 600;
+    }
+
+    .search-form button {
+        background: #10263f;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0 22px;
+        font-weight: 800;
+    }
+
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .orders-table th {
+        text-align: left;
+        color: #6b7786;
+        font-size: 13px;
+        text-transform: uppercase;
+        padding: 14px;
+        border-bottom: 1px solid #e7ebef;
+    }
+
+    .orders-table td {
+        padding: 15px 14px;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
+    }
+
+    .estado {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #eef3f7;
+        color: #10263f;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .empty {
+        padding: 30px;
+        text-align: center;
+        color: #6b7786;
+        font-weight: 700;
+    }
+
+    @media (max-width: 700px) {
+        .buscar-page {
+            padding: 20px;
+        }
+
+        .buscar-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-form {
+            flex-direction: column;
+        }
+
+        .orders-table {
+            font-size: 13px;
+        }
+    }
+</style>
+
+<div class="buscar-page">
+    <div class="buscar-header">
+        <div>
+            <h1>Buscar pedido</h1>
+            <p>Consulta los pedidos registrados, ordenados del más reciente al más antiguo.</p>
+        </div>
+
+        <a class="btn-back" href="/dashboard/">Volver al dashboard</a>
+    </div>
+
+    <div class="buscar-card">
+        <form class="search-form" method="get" action="/ventas/buscar/">
+            <input
+                type="text"
+                name="q"
+                value="{{ busqueda }}"
+                placeholder="Buscar por número de pedido, cliente o estado"
+            >
+            <button type="submit">Buscar</button>
+        </form>
+
+        {% if pedidos %}
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>N° Pedido</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td>#{{ pedido.id }}</td>
+                    <td>{{ pedido.cliente.nombre if pedido.cliente else 'Cliente no registrado' }}</td>
+                    <td>{{ pedido.total }} Bs</td>
+                    <td><span class="estado">{{ pedido.estado }}</span></td>
+                    <td>{{ pedido.creado_en }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty">
+            No se encontraron pedidos registrados.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
