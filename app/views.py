@@ -246,6 +246,7 @@ from sqlalchemy import func
 from .extensions import db
 from .services.openrouter_service import AIServiceError, OpenRouterService
 from .services.reporte_general_service import ReporteGeneralError, ReporteGeneralService
+from .services.reporte_tendencias_service import ReporteTendenciasError, ReporteTendenciasService
 
 
 class ReporteView(BaseView):
@@ -328,7 +329,7 @@ class ReporteGeneralView(BaseView):
 
         return self.render_template(
             "reporte_general.html",
-            title="Reporte General",
+            title="Reporte General por IA",
             total_productos=total_productos,
             total_clientes=total_clientes,
             total_pedidos=total_pedidos,
@@ -339,6 +340,106 @@ class ReporteGeneralView(BaseView):
             cantidades_productos=cantidades_productos,
             data_estado=data_estado,
             data_error=data_error,
+            ai_analisis=ai_analisis,
+            ai_estado=ai_estado,
+            ai_error=ai_error,
+        )
+
+
+class ReporteTendenciasView(BaseView):
+    route_base = "/reporte-tendencias"
+
+    @expose("/")
+    @has_access
+    def index(self):
+        data_estado = "ok"
+        data_error = None
+
+        ventas_mensuales = []
+        actividad_horaria = []
+        clientes_frecuentes = []
+        pedidos_30 = 0
+        pedidos_prev_30 = 0
+        ingresos_30 = 0
+        ingresos_prev_30 = 0
+
+        try:
+            service = ReporteTendenciasService.from_current_app()
+            data = service.obtener_datos_reporte_2()
+            ventas_mensuales = data["ventas_mensuales"]
+            actividad_horaria = data["actividad_horaria"]
+            clientes_frecuentes = data["clientes_frecuentes"]
+            pedidos_30 = data["pedidos_30"]
+            pedidos_prev_30 = data["pedidos_prev_30"]
+            ingresos_30 = data["ingresos_30"]
+            ingresos_prev_30 = data["ingresos_prev_30"]
+        except ReporteTendenciasError as exc:
+            data_estado = "error"
+            data_error = str(exc)
+
+        variacion_pedidos_pct = 0.0
+        if pedidos_prev_30 > 0:
+            variacion_pedidos_pct = ((pedidos_30 - pedidos_prev_30) / pedidos_prev_30) * 100
+
+        variacion_ingresos_pct = 0.0
+        if ingresos_prev_30 > 0:
+            variacion_ingresos_pct = ((ingresos_30 - ingresos_prev_30) / ingresos_prev_30) * 100
+
+        ai_analisis = None
+        ai_estado = "deshabilitado"
+        ai_error = None
+        if data_estado != "error":
+            try:
+                ai_service = OpenRouterService.from_current_app()
+                if ai_service.is_enabled:
+                    ai_analisis = ai_service.analizar_reporte_tendencias(
+                        {
+                            "ventas_mensuales": [
+                                {"mes": mes, "ingresos": float(ingresos)}
+                                for mes, ingresos in ventas_mensuales
+                            ],
+                            "actividad_horaria": [
+                                {"hora": hora, "cantidad": int(cantidad)}
+                                for hora, cantidad in actividad_horaria
+                            ],
+                            "clientes_frecuentes": [
+                                {"cliente": cliente, "pedidos": int(pedidos)}
+                                for cliente, pedidos in clientes_frecuentes
+                            ],
+                            "comparativa_30_dias": {
+                                "pedidos_actual": pedidos_30,
+                                "pedidos_previo": pedidos_prev_30,
+                                "variacion_pedidos_pct": round(variacion_pedidos_pct, 2),
+                                "ingresos_actual": float(ingresos_30),
+                                "ingresos_previo": float(ingresos_prev_30),
+                                "variacion_ingresos_pct": round(variacion_ingresos_pct, 2),
+                            },
+                        }
+                    )
+                    ai_estado = "activo"
+                else:
+                    ai_error = "Configura OPENROUTER_API_KEY para habilitar analisis automatico."
+            except AIServiceError as exc:
+                ai_estado = "error"
+                ai_error = str(exc)
+        else:
+            ai_estado = "error"
+            ai_error = "No se pudo generar analisis IA porque la carga de datos fallo."
+
+        return self.render_template(
+            "reporte_tendencias.html",
+            title="Reporte Tendencias por IA",
+            data_estado=data_estado,
+            data_error=data_error,
+            ventas_mensuales=ventas_mensuales,
+            actividad_horaria=actividad_horaria,
+            clientes_frecuentes=clientes_frecuentes,
+            pedidos_30=pedidos_30,
+            pedidos_prev_30=pedidos_prev_30,
+            ingresos_30=ingresos_30,
+            ingresos_prev_30=ingresos_prev_30,
+            variacion_pedidos_pct=variacion_pedidos_pct,
+            variacion_ingresos_pct=variacion_ingresos_pct,
             ai_analisis=ai_analisis,
             ai_estado=ai_estado,
             ai_error=ai_error,
@@ -369,6 +470,7 @@ class IAServiceView(BaseView):
 
 appbuilder.add_view_no_menu(ReporteView())
 appbuilder.add_view_no_menu(ReporteGeneralView())
+appbuilder.add_view_no_menu(ReporteTendenciasView())
 
 appbuilder.add_link(
     "Reportes",
@@ -379,9 +481,17 @@ appbuilder.add_link(
 )
 
 appbuilder.add_link(
-    "Reporte General",
+    "Reporte General por IA",
     href="/reporte-general/",
     icon="fa-line-chart",
+    category="Reportes",
+    category_icon="fa-bar-chart"
+)
+
+appbuilder.add_link(
+    "Reporte Tendencias por IA",
+    href="/reporte-tendencias/",
+    icon="fa-area-chart",
     category="Reportes",
     category_icon="fa-bar-chart"
 )

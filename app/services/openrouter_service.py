@@ -107,6 +107,23 @@ class OpenRouterService:
         )
         return self.chat_completion(system_prompt=system_prompt, user_prompt=user_prompt)
 
+    def analizar_reporte_tendencias(self, metrics: dict[str, Any]) -> str:
+        system_prompt = (
+            "Eres un analista de comportamiento para una cafeteria. "
+            "Detecta patrones de tendencia, cambios relevantes y oportunidades. "
+            "Responde en espanol, claro y accionable."
+        )
+        user_prompt = (
+            "Analiza estas metricas de tendencias y comportamiento:\n"
+            f"{metrics}\n\n"
+            "Estructura la respuesta en:\n"
+            "1) Tendencias detectadas\n"
+            "2) Alertas o riesgos\n"
+            "3) Recomendaciones priorizadas\n"
+            "4) Accion sugerida para la siguiente semana"
+        )
+        return self.chat_completion(system_prompt=system_prompt, user_prompt=user_prompt)
+
     def health_check(self) -> str:
         return self.chat_completion(
             system_prompt="Responde solo con el texto OK_OPENROUTER.",
