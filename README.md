@@ -117,6 +117,32 @@ PY
 - Crear admin: `flask fab create-admin`
 - Ejecutar app: `flask run`
 
+**Integración IA (OpenRouter) - Fase 1**
+
+- Copia variables base:
+
+```bash
+cp .env.example .env
+```
+
+- Configura al menos `OPENROUTER_API_KEY`.
+- Modelo recomendado para esta fase: `openai/gpt-4o-mini`.
+  - Razón: buen equilibrio entre costo, latencia y calidad para análisis textual de métricas.
+
+- Prueba básica de conectividad IA desde la app:
+
+```bash
+flask run
+```
+
+Luego abre:
+
+- `http://localhost:5000/ia/health` (o puerto configurado)
+
+También se integra análisis IA en:
+
+- `Reportes` -> `Análisis automático por IA`
+
 **Contacto**
 
 - Si necesitas ayuda adicional, dime qué error exacto ves y lo reviso.

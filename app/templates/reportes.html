@@ -1,97 +1,56 @@
-{% extends "appbuilder/base.html" %}
-
-{% block content %}
+{% extends "appbuilder/base.html" %} {% block content %}
 <div class="container mt-4">
-    <h2>Reportes DOLCIMOMENTI</h2>
-    <p>Resumen general de productos, clientes, pedidos y ventas.</p>
+  <h2>Módulo de Reportes</h2>
+  <p>Selecciona la opción que deseas consultar dentro del módulo.</p>
 
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="panel panel-primary">
-                <div class="panel-heading">Productos</div>
-                <div class="panel-body">
-                    <h3>{{ total_productos }}</h3>
-                    <p>Total de productos registrados</p>
-                </div>
-            </div>
+  <div class="row" style="margin-top: 18px">
+    <div class="col-md-3">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Reporte General por IA</div>
+        <div class="panel-body">
+          <p>Métricas globales, gráficos, porcentajes y análisis por IA.</p>
+          <a class="btn btn-primary" href="/reporte-general/"
+            >Abrir Reporte General por IA</a
+          >
         </div>
-
-        <div class="col-md-3">
-            <div class="panel panel-success">
-                <div class="panel-heading">Clientes</div>
-                <div class="panel-body">
-                    <h3>{{ total_clientes }}</h3>
-                    <p>Total de clientes registrados</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="panel panel-info">
-                <div class="panel-heading">Pedidos</div>
-                <div class="panel-body">
-                    <h3>{{ total_pedidos }}</h3>
-                    <p>Total de pedidos registrados</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="panel panel-warning">
-                <div class="panel-heading">Total vendido</div>
-                <div class="panel-body">
-                    <h3>{{ total_vendido }} Bs</h3>
-                    <p>Sumatoria total de pedidos</p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <hr>
+    <div class="col-md-3">
+      <div class="panel panel-info">
+        <div class="panel-heading">Reporte Tendencias por IA</div>
+        <div class="panel-body">
+          <p>
+            Tendencia de ingresos, horarios de actividad y clientes frecuentes.
+          </p>
+          <a class="btn btn-info" href="/reporte-tendencias/"
+            >Abrir Reporte Tendencias por IA</a
+          >
+        </div>
+      </div>
+    </div>
 
-    <h3>Pedidos por estado</h3>
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Estado</th>
-                <th>Cantidad de pedidos</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estado, cantidad in pedidos_por_estado %}
-            <tr>
-                <td>{{ estado }}</td>
-                <td>{{ cantidad }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="2">No existen pedidos registrados.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="col-md-3">
+      <div class="panel panel-warning">
+        <div class="panel-heading">Reporte Predicción por IA</div>
+        <div class="panel-body">
+          <p>Predicción de demanda, riesgo de quiebre y reposición sugerida.</p>
+          <a class="btn btn-warning" href="/reporte-prediccion/"
+            >Abrir Reporte Predicción por IA</a
+          >
+        </div>
+      </div>
+    </div>
 
-    <h3>Productos más vendidos</h3>
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad vendida</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for producto, cantidad in productos_mas_vendidos %}
-            <tr>
-                <td>{{ producto }}</td>
-                <td>{{ cantidad }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="2">No existen productos vendidos.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="col-md-3">
+      <div class="panel panel-success">
+        <div class="panel-heading">Prueba IA</div>
+        <div class="panel-body">
+          <p>Verifica conectividad y respuesta del servicio OpenRouter.</p>
+          <a class="btn btn-success" href="/ia/">Abrir Prueba IA</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
 {% endblock %}
