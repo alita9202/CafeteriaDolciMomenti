@@ -19,6 +19,7 @@ appbuilder.add_view_no_menu(UsuariosProtegidoView())
 
 # Product CRUD using Flask-AppBuilder
 from flask import jsonify, request, redirect, url_for
+from datetime import datetime
 from flask_appbuilder import ModelView
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.upload import ImageUploadField
@@ -861,3 +862,104 @@ class BuscarPedidoView(BaseView):
 
 
 appbuilder.add_view_no_menu(BuscarPedidoView())
+
+# -----------------------------
+# VENTAS - CONFIRMAR PAGO
+# -----------------------------
+
+class ConfirmarPagoView(BaseView):
+    route_base = "/ventas/pagar"
+
+    @expose("/<int:pedido_id>/")
+    @has_access
+    def index(self, pedido_id):
+        pedido = db.session.query(Pedido).get(pedido_id)
+
+        if not pedido:
+            return "Pedido no encontrado", 404
+
+        return self.render_template(
+            "ventas_pagar.html",
+            pedido=pedido
+        )
+
+    @expose("/<int:pedido_id>/confirmar", methods=["POST"])
+    @has_access
+    def confirmar(self, pedido_id):
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "ok": False,
+                "mensaje": "No se recibieron datos del pago."
+            }), 400
+
+        pedido = db.session.query(Pedido).get(pedido_id)
+
+        if not pedido:
+            return jsonify({
+                "ok": False,
+                "mensaje": "Pedido no encontrado."
+            }), 404
+
+        if pedido.estado != "pendiente":
+            return jsonify({
+                "ok": False,
+                "mensaje": "Este pedido ya fue finalizado o no está pendiente."
+            }), 400
+
+        try:
+            metodo = data.get("metodo")
+            referencia = data.get("referencia") or None
+            monto_recibido = data.get("monto_recibido")
+
+            if metodo not in ["efectivo", "qr", "tarjeta"]:
+                return jsonify({
+                    "ok": False,
+                    "mensaje": "Método de pago no válido."
+                }), 400
+
+            total = Decimal(pedido.total or 0)
+
+            if metodo == "efectivo":
+                recibido = Decimal(str(monto_recibido or 0))
+
+                if recibido < total:
+                    return jsonify({
+                        "ok": False,
+                        "mensaje": "El monto recibido no puede ser menor al total del pedido."
+                    }), 400
+
+            pago = Pago(
+                pedido=pedido,
+                monto=total,
+                metodo=metodo,
+                estado="pagado",
+                referencia_transaccion=referencia
+            )
+
+            pedido.estado = "entregado"
+
+            if hasattr(pedido, "entregado_en"):
+                pedido.entregado_en = datetime.now()
+
+            db.session.add(pago)
+            db.session.add(pedido)
+            db.session.commit()
+
+            return jsonify({
+                "ok": True,
+                "mensaje": "Pago confirmado correctamente.",
+                "pedido_id": pedido.id
+            })
+
+        except Exception as error:
+            db.session.rollback()
+
+            return jsonify({
+                "ok": False,
+                "mensaje": str(error)
+            }), 500
+
+
+appbuilder.add_view_no_menu(ConfirmarPagoView())

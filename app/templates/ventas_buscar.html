@@ -116,6 +116,23 @@
         font-weight: 800;
     }
 
+    .btn-pagar {
+    display: inline-block;
+    background: #10263f;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 12px;
+    }
+
+    .btn-pagar:hover {
+        background: #173553;
+        color: white;
+        text-decoration: none;
+    }
+
     .empty {
         padding: 30px;
         text-align: center;
@@ -173,6 +190,7 @@
                     <th>Total</th>
                     <th>Estado</th>
                     <th>Fecha</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -183,7 +201,16 @@
                     <td>{{ pedido.total }} Bs</td>
                     <td><span class="estado">{{ pedido.estado }}</span></td>
                     <td>{{ pedido.creado_en }}</td>
-                </tr>
+                    <td>
+                        {% if pedido.estado == "pendiente" %}
+                            <a class="btn-pagar" href="/ventas/pagar/{{ pedido.id }}/">
+                                Confirmar pago
+                            </a>
+                        {% else %}
+                            <span class="estado">Finalizado</span>
+                        {% endif %}
+                    </td>
+                 </tr>
                 {% endfor %}
             </tbody>
         </table>
