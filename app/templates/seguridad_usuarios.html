@@ -1,0 +1,275 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .seguridad-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .seguridad-header {
+        margin-bottom: 24px;
+    }
+
+    .seguridad-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .seguridad-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .actions-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .actions-row h2 {
+        margin: 0;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .btn-admin {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #10263f;
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-admin:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .usuarios-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
+    }
+
+    .usuarios-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .usuarios-table th {
+        text-align: left;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 14px 12px;
+        border-bottom: 1px solid #e7ebef;
+    }
+
+    .usuarios-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
+        vertical-align: middle;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef3f7;
+        color: #10263f;
+        margin: 2px;
+    }
+
+    .pill-ok {
+        background: #e8f6ef;
+        color: #247a4b;
+    }
+
+    .pill-danger {
+        background: #fdecec;
+        color: #a93939;
+    }
+
+    .btn-action {
+        color: #10263f;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-action:hover {
+        color: #173553;
+        text-decoration: underline;
+    }
+
+    .empty-message {
+        padding: 28px;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        color: #6b7786;
+        font-weight: 600;
+        text-align: center;
+        background: #fafbfc;
+    }
+
+    @media (max-width: 900px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .usuarios-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .actions-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .seguridad-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="seguridad-page">
+    <div class="seguridad-header">
+        <h1>Usuarios</h1>
+        <p>Consulta los usuarios registrados en el sistema y sus roles asignados.</p>
+    </div>
+
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Total usuarios</span>
+            <strong>{{ total_usuarios }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Usuarios activos</span>
+            <strong>{{ usuarios_activos }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Roles disponibles</span>
+            <strong>{{ total_roles }}</strong>
+        </div>
+    </section>
+
+    <div class="actions-row">
+        <h2>Usuarios del sistema</h2>
+
+        <a class="btn-admin" href="/seguridad/usuarios/nuevo/">
+            <i class="bi bi-plus-circle"></i> Nuevo usuario
+        </a>
+    </div>
+
+    <section class="usuarios-card">
+        {% if usuarios %}
+        <table class="usuarios-table">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Estado</th>
+                    <th>Roles</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.username }}</td>
+                    <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>
+                        {% if usuario.active %}
+                            <span class="pill pill-ok">Activo</span>
+                        {% else %}
+                            <span class="pill pill-danger">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for rol in usuario.roles %}
+                            <span class="pill">{{ rol.name }}</span>
+                        {% else %}
+                            <span class="pill">Sin rol</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <a class="btn-action" href="/seguridad/usuarios/editar/{{ usuario.id }}">
+                            Editar
+                            &nbsp; | &nbsp;
+                            <a class="btn-action" href="/seguridad/usuarios/desactivar/{{ usuario.id }}/">
+                                Desactivar
+                            </a>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-message">
+            No existen usuarios registrados.
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

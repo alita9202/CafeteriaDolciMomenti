@@ -1,0 +1,296 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .catalogo-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .catalogo-header {
+        margin-bottom: 24px;
+    }
+
+    .catalogo-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .catalogo-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .actions-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .actions-row h2 {
+        margin: 0;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .btn-admin {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #10263f;
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-admin:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .categorias-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .categoria-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
+    }
+
+    .categoria-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .categoria-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        background: #eef3f7;
+        color: #10263f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        flex-shrink: 0;
+    }
+
+    .categoria-card h3 {
+        margin: 0 0 8px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .categoria-card p {
+        margin: 0;
+        color: #647485;
+        line-height: 1.6;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .categoria-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding-top: 16px;
+        margin-top: 16px;
+        border-top: 1px solid #edf0f3;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef3f7;
+        color: #10263f;
+    }
+
+    .pill-ok {
+        background: #e8f6ef;
+        color: #247a4b;
+    }
+
+    .pill-muted {
+        background: #f1f3f5;
+        color: #6b7786;
+    }
+
+    .btn-edit {
+        color: #10263f;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .btn-edit:hover {
+        color: #173553;
+        text-decoration: underline;
+    }
+
+    .empty-message {
+        padding: 28px;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        color: #6b7786;
+        font-weight: 600;
+        text-align: center;
+        background: #fafbfc;
+    }
+
+    @media (max-width: 1000px) {
+        .categorias-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 800px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .categorias-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .catalogo-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="catalogo-page">
+    <div class="catalogo-header">
+        <h1>Categorías</h1>
+        <p>Organiza los productos del catálogo por grupos comerciales como helados, cafés, postres o bebidas.</p>
+    </div>
+
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Total categorías</span>
+            <strong>{{ total_categorias }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Categorías activas</span>
+            <strong>{{ categorias_activas }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Registros mostrados</span>
+            <strong>{{ categorias_info | length }}</strong>
+        </div>
+    </section>
+
+    <div class="actions-row">
+        <h2>Categorías del catálogo</h2>
+
+        <a class="btn-admin" href="/catalogo/categorias/nueva/">
+            <i class="bi bi-plus-circle"></i> Nueva categoría
+        </a>
+    </div>
+
+    {% if categorias_info %}
+    <div class="categorias-grid">
+        {% for item in categorias_info %}
+        <article class="categoria-card">
+            <div class="categoria-top">
+                <div>
+                    <h3>{{ item.categoria.nombre }}</h3>
+                    <p>
+                        {{ item.categoria.descripcion or 'Categoría registrada para organizar productos del catálogo.' }}
+                    </p>
+                </div>
+
+                <div class="categoria-icon">
+                    <i class="bi bi-tags"></i>
+                </div>
+            </div>
+
+            <div>
+                {% if item.categoria.activa %}
+                    <span class="pill pill-ok">Activa</span>
+                {% else %}
+                    <span class="pill pill-muted">Inactiva</span>
+                {% endif %}
+
+                <span class="pill">{{ item.total_productos }} productos</span>
+            </div>
+
+            <div class="categoria-meta">
+                <span class="pill">ID #{{ item.categoria.id }}</span>
+
+                <a class="btn-edit" href="/categoriamodelview/edit/{{ item.categoria.id }}">
+                    Editar
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-message">
+        Todavía no existen categorías registradas.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,611 @@
+{% extends "admin_layout.html" %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block page_content %}
+<style>
+    .pos-page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        background: #eef1f5;
+    }
+
+    .pos-main {
+        padding: 28px;
+    }
+
+    .pos-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .pos-header h1 {
+        margin: 0;
+        color: #10263f;
+        font-size: 34px;
+        font-weight: 800;
+    }
+
+    .pos-header p {
+        margin: 7px 0 0;
+        color: #5f6e7c;
+        font-weight: 600;
+    }
+
+    .btn-dashboard:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .buyer-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+        margin-bottom: 22px;
+    }
+
+    .buyer-card h3,
+    .products-card h3,
+    .cart-panel h3 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-weight: 800;
+    }
+
+    .buyer-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .field label {
+        display: block;
+        font-size: 12px;
+        color: #6b7786;
+        font-weight: 800;
+        margin-bottom: 7px;
+        text-transform: uppercase;
+    }
+
+    .field input,
+    .field select {
+        width: 100%;
+        height: 44px;
+        border: 1px solid #dbe2e9;
+        border-radius: 12px;
+        padding: 0 12px;
+        color: #10263f;
+        font-weight: 700;
+        background: #f8fafc;
+    }
+
+    .products-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    }
+
+    .category-tabs {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .category-tab {
+        border: none;
+        background: #eef3f7;
+        color: #10263f;
+        padding: 10px 15px;
+        border-radius: 999px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .category-tab.active,
+    .category-tab:hover {
+        background: #10263f;
+        color: #ffffff;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+
+    .product-card {
+        position: relative;
+        background: #f8fafc;
+        border: 1px solid #e0e6ed;
+        border-radius: 22px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.10);
+    }
+
+    .product-card.agotado {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+    .product-img {
+        height: 135px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .product-info {
+        padding: 16px;
+    }
+
+    .product-info h4 {
+        margin: 0 0 8px;
+        color: #10263f;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .product-info p {
+        margin: 0 0 12px;
+        color: #697987;
+        font-size: 13px;
+        line-height: 1.4;
+        min-height: 34px;
+    }
+
+    .product-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .price {
+        color: #10263f;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .stock {
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eaf3ec;
+        color: #257346;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .stock.empty {
+        background: #fdecec;
+        color: #a93939;
+    }
+
+    .cart-panel {
+        background: #111c2b;
+        color: #ffffff;
+        padding: 28px;
+        min-height: 100vh;
+        box-shadow: -14px 0 34px rgba(0,0,0,0.18);
+    }
+
+    .cart-panel h3 {
+        color: #ffffff;
+    }
+
+    .cart-empty {
+        background: rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 22px;
+        color: #b8c4d1;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .cart-items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .cart-item {
+        background: rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .cart-item strong {
+        display: block;
+        color: #ffffff;
+        margin-bottom: 6px;
+    }
+
+    .cart-item span {
+        color: #cfd8e3;
+        font-size: 13px;
+    }
+
+    .cart-total {
+        border-top: 1px solid rgba(255,255,255,0.15);
+        padding-top: 20px;
+        margin-top: 20px;
+    }
+
+    .cart-total-row {
+        display: flex;
+        justify-content: space-between;
+        color: #cfd8e3;
+        margin-bottom: 12px;
+        font-weight: 700;
+    }
+
+    .cart-total-row.final {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 900;
+    }
+
+    .btn-confirm {
+        width: 100%;
+        height: 50px;
+        border: none;
+        border-radius: 14px;
+        background: #f5f1ea;
+        color: #10263f;
+        font-weight: 900;
+        margin-top: 18px;
+        cursor: pointer;
+    }
+
+    .btn-confirm:hover {
+        background: #ffffff;
+    }
+
+    .note {
+        margin-top: 16px;
+        color: #91a1b3;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1150px) {
+        .pos-page {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-panel {
+            min-height: auto;
+        }
+
+        .product-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 800px) {
+        .pos-main {
+            padding: 18px;
+        }
+
+        .buyer-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .product-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .pos-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="pos-page">
+    <main class="pos-main">
+        <div class="pos-header">
+            <div>
+                <h1>Realizar venta</h1>
+                <p>Selecciona productos disponibles y arma el pedido del cliente.</p>
+            </div>
+        </div>
+
+        <section class="buyer-card">
+            <h3>Datos del comprador</h3>
+
+            <div class="buyer-grid">
+                <div class="field">
+                    <label>Nombre</label>
+                    <input type="text" placeholder="Cliente ocasional">
+                </div>
+
+                <div class="field">
+                    <label>Teléfono</label>
+                    <input type="text" placeholder="Opcional">
+                </div>
+
+                <div class="field">
+                    <label>¿Requiere factura?</label>
+                    <select>
+                        <option>No</option>
+                        <option>Sí</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>NIT / Razón social</label>
+                    <input type="text" placeholder="Solo si requiere factura">
+                </div>
+            </div>
+        </section>
+
+        <section class="products-card">
+            <h3>Productos disponibles</h3>
+
+            <div class="category-tabs">
+                <button class="category-tab active" data-category="todos">Todos</button>
+                {% for categoria in categorias %}
+                <button class="category-tab" data-category="{{ categoria.id }}">
+                    {{ categoria.nombre }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <div class="product-grid">
+                {% for producto in productos %}
+                <div
+                    class="product-card {% if producto.stock <= 0 %}agotado{% endif %}"
+                    data-id="{{ producto.id }}"
+                    data-category="{{ producto.categoria_id }}"
+                    data-name="{{ producto.nombre }}"
+                    data-price="{{ producto.precio }}"
+                    data-stock="{{ producto.stock }}"
+                >
+
+                    {% set categoria_nombre = producto.categoria.nombre|lower if producto.categoria else '' %}
+
+                    {% if 'helado' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80' %}
+                    {% elif 'fria' in categoria_nombre or 'fría' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=800&q=80' %}
+                    {% elif 'caliente' in categoria_nombre or 'cafe' in categoria_nombre or 'café' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80' %}
+                    {% elif 'postre' in categoria_nombre %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80' %}
+                    {% else %}
+                        {% set imagen_producto = 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=800&q=80' %}
+                    {% endif %}
+
+<div class="product-img" style="background-image: linear-gradient(rgba(16,38,63,0.10), rgba(16,38,63,0.10)), url('{{ imagen_producto }}');"></div>
+
+
+                    <div class="product-info">
+                        <h4>{{ producto.nombre }}</h4>
+                        <p>{{ producto.descripcion or 'Producto disponible para venta.' }}</p>
+
+                        <div class="product-bottom">
+                            <span class="price">{{ producto.precio }} Bs</span>
+
+                            {% if producto.stock <= 0 %}
+                            <span class="stock empty">Agotado</span>
+                            {% else %}
+                            <span class="stock">{{ producto.stock }} disp.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p>No existen productos registrados.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <aside class="cart-panel">
+        <h3>Resumen del pedido</h3>
+
+        <div class="cart-empty" id="cartEmpty">
+            Todavía no se agregaron productos. Selecciona uno o varios productos disponibles para armar la venta.
+        </div>
+
+        <div class="cart-items" id="cartItems"></div>
+
+        <div class="cart-total">
+            <div class="cart-total-row">
+                <span>Productos</span>
+                <span id="cartCount">0</span>
+            </div>
+
+            <div class="cart-total-row final">
+                <span>Total</span>
+                <span id="cartTotal">0.00 Bs</span>
+            </div>
+        </div>
+
+        <button class="btn-confirm" type="button" id="btnConfirmarVenta">
+            Confirmar venta
+        </button>
+
+        <div class="note">
+            Esta pantalla ya reutiliza productos y stock de la base de datos. En el siguiente paso conectaremos la confirmación para crear el pedido y sus líneas automáticamente.
+        </div>
+    </aside>
+</div>
+
+<script>
+    const tabs = document.querySelectorAll(".category-tab");
+    const productCards = document.querySelectorAll(".product-card");
+    const cartItems = document.getElementById("cartItems");
+    const cartEmpty = document.getElementById("cartEmpty");
+    const cartCount = document.getElementById("cartCount");
+    const cartTotal = document.getElementById("cartTotal");
+
+    let cart = [];
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+
+            const category = tab.dataset.category;
+
+            productCards.forEach(card => {
+                if (category === "todos" || card.dataset.category === category) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+    });
+
+    productCards.forEach(card => {
+        card.addEventListener("click", () => {
+            const stock = Number(card.dataset.stock);
+
+            if (stock <= 0) {
+                alert("Este producto está agotado.");
+                return;
+            }
+
+            const name = card.dataset.name;
+            const price = Number(card.dataset.price);
+
+            const existing = cart.find(item => item.name === name);
+
+            if (existing) {
+                if (existing.quantity < stock) {
+                    existing.quantity += 1;
+                } else {
+                    alert("No hay más stock disponible para este producto.");
+                }
+            } else {
+                cart.push({
+                    id: Number(card.dataset.id),
+                    name,
+                    price,
+                    quantity: 1
+                });
+            }
+
+            renderCart();
+        });
+    });
+
+    function renderCart() {
+        cartItems.innerHTML = "";
+
+        if (cart.length === 0) {
+            cartEmpty.style.display = "block";
+        } else {
+            cartEmpty.style.display = "none";
+        }
+
+        let total = 0;
+        let count = 0;
+
+        cart.forEach(item => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            count += item.quantity;
+
+            const div = document.createElement("div");
+            div.className = "cart-item";
+            div.innerHTML = `
+                <strong>${item.name}</strong>
+                <span>${item.quantity} x ${item.price.toFixed(2)} Bs = ${subtotal.toFixed(2)} Bs</span>
+            `;
+
+            cartItems.appendChild(div);
+        });
+
+        cartCount.textContent = count;
+        cartTotal.textContent = total.toFixed(2) + " Bs";
+    }
+
+    const btnConfirmarVenta = document.getElementById("btnConfirmarVenta");
+
+    btnConfirmarVenta.addEventListener("click", async () => {
+        if (cart.length === 0) {
+            alert("Debe seleccionar al menos un producto.");
+            return;
+        }
+
+        const nombre = document.querySelector('input[placeholder="Cliente ocasional"]').value || "Cliente ocasional";
+        const telefono = document.querySelector('input[placeholder="Opcional"]').value || "";
+        const requiereFactura = document.querySelector("select").value === "Sí";
+        const nitRazon = document.querySelector('input[placeholder="Solo si requiere factura"]').value || "";
+
+        const payload = {
+            comprador: {
+                nombre: nombre,
+                telefono: telefono,
+                requiere_factura: requiereFactura,
+                nit: requiereFactura ? nitRazon : "",
+                razon_social: requiereFactura ? nombre : ""
+            },
+            productos: cart.map(item => ({
+                id: item.id,
+                cantidad: item.quantity
+            }))
+        };
+
+        btnConfirmarVenta.disabled = true;
+        btnConfirmarVenta.textContent = "Registrando venta...";
+
+        try {
+            const response = await fetch("/ventas/nueva/confirmar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!result.ok) {
+                alert(result.mensaje || "No se pudo registrar la venta.");
+                btnConfirmarVenta.disabled = false;
+                btnConfirmarVenta.textContent = "Confirmar venta";
+                return;
+            }
+
+            alert(`Venta registrada correctamente. Pedido #${result.pedido_id}. Total: ${result.total} Bs`);
+
+            window.location.href = "/ventas/buscar/";
+
+        } catch (error) {
+            alert("Ocurrió un error al registrar la venta.");
+            btnConfirmarVenta.disabled = false;
+            btnConfirmarVenta.textContent = "Confirmar venta";
+        }
+    });
+
+</script>
+{% endblock %}

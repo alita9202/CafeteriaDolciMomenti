@@ -1,293 +1,240 @@
-{% extends "appbuilder/base.html" %} {% block content %}
-<div class="container mt-4">
-  <style>
-    .kpi-card {
-      border-radius: 12px;
-      border: 1px solid #e8e8e8;
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .reporte-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
     }
 
-    .kpi-title {
-      margin: 0;
-      color: #8a8a8a;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+    .reporte-header {
+        margin-bottom: 24px;
     }
 
-    .kpi-value {
-      margin: 8px 0 4px;
-      color: #273043;
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.1;
+    .reporte-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
     }
 
-    .kpi-desc {
-      margin: 0;
-      color: #6f6f6f;
-      font-size: 12px;
+    .reporte-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
     }
 
-    .section-card {
-      border: 1px solid #ebebeb;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      background: #fff;
+    .prediction-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
     }
 
-    .section-title {
-      margin: 0 0 12px;
-      color: #2d3748;
-      font-weight: 600;
-      font-size: 18px;
+    .prediction-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
     }
 
-    .badge-soft {
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
+    .prediction-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
     }
 
-    .badge-soft-info {
-      background: #e9f4ff;
-      color: #1d6fa5;
+    .prediction-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 25px;
+        font-weight: 700;
     }
 
-    .badge-soft-success {
-      background: #eaf8ef;
-      color: #2f7a49;
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
     }
 
-    .badge-soft-warning {
-      background: #fff4e5;
-      color: #8f5f0f;
+    .panel {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
     }
 
-    .badge-soft-danger {
-      background: #ffeceb;
-      color: #b42318;
+    .panel h2 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
     }
 
-    .mini-chart-wrap {
-      height: 320px;
-      position: relative;
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
     }
-  </style>
 
-  <h2>Reporte 3: Predicción o Recomendación Inteligente por IA</h2>
-  <p>
-    Sugerencias de reposición y priorización comercial basadas en demanda y
-    stock.
-  </p>
+    .data-row:last-child {
+        border-bottom: none;
+    }
 
-  <div style="margin-bottom: 12px">
-    <a
-      id="btn-refresh"
-      class="btn btn-primary"
-      href="/reporte-prediccion/?refresh=1"
-      >Actualizar y refrescar caché</a
-    >
-    {% if cache_hit %}
-    <span class="badge-soft badge-soft-info" style="margin-left: 8px"
-      >Caché activa ({{ cache_age_seconds }}s)</span
-    >
-    {% else %}
-    <span class="badge-soft badge-soft-success" style="margin-left: 8px"
-      >Datos frescos</span
-    >
-    {% endif %}
-  </div>
+    .data-row span {
+        color: #6b7786;
+    }
 
-  {% if data_error %}
-  <div class="alert alert-danger">
-    <strong>Error en datos:</strong> {{ data_error }}
-  </div>
-  {% endif %}
+    .pill {
+        background: #eef3f7;
+        color: #10263f;
+        border-radius: 6px;
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 700;
+    }
 
-  <div class="row mt-4">
-    <div class="col-md-4">
-      <div class="kpi-card">
-        <p class="kpi-title">Demanda total 30 días</p>
-        <p class="kpi-value">
-          {{ '%.0f'|format(demanda_general.unidades_30d or 0) }}
-        </p>
-        <p class="kpi-desc">Unidades vendidas (pagado/entregado)</p>
-      </div>
+    .ai-panel {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 24px;
+    }
+
+    .ai-panel h2 {
+        margin: 0 0 14px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .ai-content {
+        color: #34495e;
+        font-size: 15px;
+        line-height: 1.8;
+        font-weight: 600;
+        white-space: pre-line;
+        background: #f8fafc;
+        border: 1px solid #edf0f3;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .notice-box {
+        background: #f8fafc;
+        border: 1px solid #e0e4ea;
+        border-left: 4px solid #10263f;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 24px;
+        color: #34495e;
+        font-weight: 600;
+        line-height: 1.7;
+    }
+
+    .empty-message {
+        color: #6b7786;
+        background: #fafbfc;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        padding: 20px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    @media (max-width: 1000px) {
+        .prediction-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .reporte-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="reporte-page">
+    <div class="reporte-header">
+        <h1>Reporte de predicción IA</h1>
+        <p>Recomendaciones inteligentes para anticipar decisiones comerciales y mejorar la gestión del negocio.</p>
     </div>
-    <div class="col-md-4">
-      <div class="kpi-card">
-        <p class="kpi-title">Demanda total 90 días</p>
-        <p class="kpi-value">
-          {{ '%.0f'|format(demanda_general.unidades_90d or 0) }}
-        </p>
-        <p class="kpi-desc">Base para estimación diaria</p>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="kpi-card">
-        <p class="kpi-title">Productos en riesgo</p>
-        <p class="kpi-value">{{ productos_riesgo|length }}</p>
-        <p class="kpi-desc">Cobertura estimada menor o igual a 10 días</p>
-      </div>
-    </div>
-  </div>
 
-  <div class="row">
-    <div class="col-md-7">
-      <div class="section-card">
-        <h3 class="section-title">Productos con mayor demanda (30 días)</h3>
-        <div class="mini-chart-wrap">
-          <canvas id="chartDemandaTop"></canvas>
+    <section class="prediction-grid">
+        <div class="prediction-card">
+            <span>Pedidos registrados</span>
+            <strong>{{ total_pedidos | default(0) }}</strong>
         </div>
-      </div>
-    </div>
-    <div class="col-md-5">
-      <div class="section-card">
-        <h3 class="section-title">Top categorías por unidades (30 días)</h3>
-        <div class="mini-chart-wrap">
-          <canvas id="chartCategorias"></canvas>
+
+        <div class="prediction-card">
+            <span>Total vendido</span>
+            <strong>{{ total_vendido | default(0) }} Bs</strong>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="section-card">
-    <h3 class="section-title">
-      Productos críticos y reposición sugerida (14 días)
-    </h3>
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Stock actual</th>
-          <th>Demanda diaria estimada</th>
-          <th>Cobertura (días)</th>
-          <th>Reposición sugerida</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in productos_riesgo %}
-        <tr>
-          <td>{{ item.nombre }}</td>
-          <td>{{ item.stock }}</td>
-          <td>{{ item.demanda_diaria_estimada }}</td>
-          <td>
-            {% if item.dias_cobertura is not none %} {{ item.dias_cobertura }}
-            {% else %} N/D {% endif %}
-          </td>
-          <td>
-            <span class="badge-soft badge-soft-danger"
-              >{{ item.reposicion_sugerida_14d }}</span
-            >
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="5">
-            No hay productos críticos detectados con la regla actual.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        <div class="prediction-card">
+            <span>Productos disponibles</span>
+            <strong>{{ total_productos | default(0) }}</strong>
+        </div>
+    </section>
 
-  <hr />
+    <div class="notice-box">
+        Este reporte utiliza los datos registrados del sistema para generar una orientación sobre posibles acciones futuras,
+        como reforzar productos de mayor salida, revisar stock y mejorar la atención según el comportamiento de pedidos.
+    </div>
 
-  <h3>Recomendaciones generadas por IA</h3>
-  {% if ai_analisis %}
-  <div class="panel panel-success">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-success">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body" style="white-space: pre-line">
-      {{ ai_analisis }}
-    </div>
-  </div>
-  {% elif ai_error %}
-  <div class="panel panel-warning">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-warning">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body">{{ ai_error }}</div>
-  </div>
-  {% else %}
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-info">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body">No hay recomendaciones disponibles todavía.</div>
-  </div>
-  {% endif %}
+    <section class="content-grid">
+        <div class="panel">
+            <h2>Productos relevantes para decisión</h2>
+
+            {% for producto, cantidad in productos_mas_vendidos | default([]) %}
+            <div class="data-row">
+                <span>{{ producto }}</span>
+                <strong class="pill">{{ cantidad }}</strong>
+            </div>
+            {% else %}
+            <div class="empty-message">
+                No existen ventas suficientes para generar una predicción por producto.
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="panel">
+            <h2>Situación de pedidos</h2>
+
+            {% for estado, cantidad in pedidos_por_estado | default([]) %}
+            <div class="data-row">
+                <span>{{ estado }}</span>
+                <strong class="pill">{{ cantidad }}</strong>
+            </div>
+            {% else %}
+            <div class="empty-message">
+                No existen pedidos suficientes para evaluar la situación actual.
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="ai-panel">
+        <h2>Predicción y recomendación inteligente</h2>
+
+        <div class="ai-content">
+            {{ ai_analisis | default("La predicción inteligente se mostrará cuando existan datos suficientes y el servicio de IA responda correctamente.") }}
+        </div>
+    </section>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  (function () {
-    const productos = {{ productos_demanda | tojson }} || [];
-    const categorias = {{ categorias_top | tojson }} || [];
-
-    const topProductos = productos.slice(0, 8);
-    const labelsProd = topProductos.map((x) => x.nombre);
-    const valuesProd = topProductos.map((x) => Number(x.ventas_30d || 0));
-
-    const labelsCat = categorias.slice(0, 6).map((x) => x.categoria || 'Sin categoría');
-    const valuesCat = categorias.slice(0, 6).map((x) => Number(x.unidades_30d || 0));
-
-    const ctxProd = document.getElementById('chartDemandaTop');
-    if (ctxProd && labelsProd.length) {
-      new Chart(ctxProd, {
-        type: 'bar',
-        data: {
-          labels: labelsProd,
-          datasets: [
-            {
-              label: 'Unidades vendidas (30d)',
-              data: valuesProd,
-              backgroundColor: '#7C3AED',
-              borderRadius: 8,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-        },
-      });
-    }
-
-    const ctxCat = document.getElementById('chartCategorias');
-    if (ctxCat && labelsCat.length) {
-      new Chart(ctxCat, {
-        type: 'doughnut',
-        data: {
-          labels: labelsCat,
-          datasets: [
-            {
-              data: valuesCat,
-              backgroundColor: ['#0EA5A8', '#2563EB', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'],
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } },
-        },
-      });
-    }
-  })();
-</script>
 {% endblock %}

@@ -1,56 +1,220 @@
-{% extends "appbuilder/base.html" %} {% block content %}
-<div class="container mt-4">
-  <h2>Módulo de Reportes</h2>
-  <p>Selecciona la opción que deseas consultar dentro del módulo.</p>
+{% extends "admin_layout.html" %}
 
-  <div class="row" style="margin-top: 18px">
-    <div class="col-md-3">
-      <div class="panel panel-primary">
-        <div class="panel-heading">Reporte General por IA</div>
-        <div class="panel-body">
-          <p>Métricas globales, gráficos, porcentajes y análisis por IA.</p>
-          <a class="btn btn-primary" href="/reporte-general/"
-            >Abrir Reporte General por IA</a
-          >
-        </div>
-      </div>
+{% block page_content %}
+<style>
+    .reportes-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .reportes-header {
+        margin-bottom: 28px;
+    }
+
+    .reportes-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .reportes-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .reportes-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+    }
+
+    .reporte-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 24px;
+        text-decoration: none;
+        transition: 0.18s ease;
+        min-height: 190px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .reporte-card:hover {
+        transform: translateY(-3px);
+        border-color: #c9d3df;
+        text-decoration: none;
+        background: #fbfcfd;
+    }
+
+    .reporte-top {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .reporte-icon {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        border-radius: 10px;
+        background: #eef3f7;
+        color: #10263f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .reporte-card h3 {
+        margin: 0 0 8px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .reporte-card p {
+        margin: 0;
+        color: #647485;
+        line-height: 1.6;
+        font-weight: 600;
+    }
+
+    .tag {
+        display: inline-block;
+        margin-top: 22px;
+        width: fit-content;
+        padding: 7px 11px;
+        border-radius: 6px;
+        background: #eef3f7;
+        color: #10263f;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .ia-card {
+        background: #10263f;
+        border-color: #10263f;
+    }
+
+    .ia-card:hover {
+        background: #173553;
+        border-color: #173553;
+    }
+
+    .ia-card h3,
+    .ia-card p {
+        color: #ffffff;
+    }
+
+    .ia-card .reporte-icon {
+        background: rgba(255,255,255,0.13);
+        color: #ffffff;
+    }
+
+    .ia-card .tag {
+        background: rgba(255,255,255,0.14);
+        color: #ffffff;
+    }
+
+    .reportes-note {
+        margin-top: 24px;
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-left: 4px solid #10263f;
+        border-radius: 10px;
+        padding: 18px;
+        color: #34495e;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 900px) {
+        .reportes-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .reportes-header h1 {
+            font-size: 26px;
+        }
+
+        .reporte-top {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="reportes-page">
+    <div class="reportes-header">
+        <h1>Centro de reportes</h1>
+        <p>Selecciona el reporte que deseas revisar dentro del panel administrativo.</p>
     </div>
 
-    <div class="col-md-3">
-      <div class="panel panel-info">
-        <div class="panel-heading">Reporte Tendencias por IA</div>
-        <div class="panel-body">
-          <p>
-            Tendencia de ingresos, horarios de actividad y clientes frecuentes.
-          </p>
-          <a class="btn btn-info" href="/reporte-tendencias/"
-            >Abrir Reporte Tendencias por IA</a
-          >
-        </div>
-      </div>
+    <div class="reportes-grid">
+        <a class="reporte-card" href="/graficas/">
+            <div class="reporte-top">
+                <div class="reporte-icon">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div>
+                    <h3>Gráficas</h3>
+                    <p>Visualiza productos más vendidos y pedidos por estado mediante gráficos claros.</p>
+                </div>
+            </div>
+            <span class="tag">Visual</span>
+        </a>
+
+        <a class="reporte-card ia-card" href="/reporte-general/">
+            <div class="reporte-top">
+                <div class="reporte-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <div>
+                    <h3>Reporte general IA</h3>
+                    <p>Análisis inteligente del estado general del negocio, ventas, pedidos y productos.</p>
+                </div>
+            </div>
+            <span class="tag">IA</span>
+        </a>
+
+        <a class="reporte-card ia-card" href="/reporte-tendencias/">
+            <div class="reporte-top">
+                <div class="reporte-icon">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+                <div>
+                    <h3>Tendencias IA</h3>
+                    <p>Identifica patrones de comportamiento comercial y productos con mayor movimiento.</p>
+                </div>
+            </div>
+            <span class="tag">IA</span>
+        </a>
+
+        <a class="reporte-card ia-card" href="/reporte-prediccion/">
+            <div class="reporte-top">
+                <div class="reporte-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div>
+                    <h3>Predicción IA</h3>
+                    <p>Genera recomendaciones para anticipar decisiones sobre ventas, stock y atención.</p>
+                </div>
+            </div>
+            <span class="tag">IA</span>
+        </a>
     </div>
 
-    <div class="col-md-3">
-      <div class="panel panel-warning">
-        <div class="panel-heading">Reporte Predicción por IA</div>
-        <div class="panel-body">
-          <p>Predicción de demanda, riesgo de quiebre y reposición sugerida.</p>
-          <a class="btn btn-warning" href="/reporte-prediccion/"
-            >Abrir Reporte Predicción por IA</a
-          >
-        </div>
-      </div>
+    <div class="reportes-note">
+        Los reportes inteligentes utilizan datos registrados en el sistema y apoyo de OpenRouter. 
+        Si el servicio externo demora o no responde, el sistema mantiene visibles sus métricas principales para la defensa.
     </div>
-
-    <div class="col-md-3">
-      <div class="panel panel-success">
-        <div class="panel-heading">Prueba IA</div>
-        <div class="panel-body">
-          <p>Verifica conectividad y respuesta del servicio OpenRouter.</p>
-          <a class="btn btn-success" href="/ia/">Abrir Prueba IA</a>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 {% endblock %}

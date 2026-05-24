@@ -1,0 +1,340 @@
+{% extends "appbuilder/base.html" %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<style>
+    .navbar,
+    .navbar-inverse,
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    body {
+        background: #eef1f5;
+        padding-top: 0 !important;
+        font-family: 'Nunito Sans',sans-serif;
+    }
+
+    .factura-page {
+        min-height: 100vh;
+        padding: 40px;
+    }
+
+    .factura-actions {
+        max-width: 850px;
+        margin: 0 auto 20px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .btn-action {
+        background: #10263f;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-action:hover {
+        background: #173553;
+        color: white;
+        text-decoration: none;
+    }
+
+    .factura-card {
+        max-width: 850px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        color: #10263f;
+    }
+
+    .factura-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        border-bottom: 2px solid #edf0f3;
+        padding-bottom: 22px;
+        margin-bottom: 26px;
+    }
+
+    .brand h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 900;
+        color: #10263f;
+    }
+
+    .brand p {
+        margin: 8px 0 0;
+        color: #6b7786;
+        font-weight: 600;
+    }
+
+    .factura-info {
+        text-align: right;
+    }
+
+    .factura-info h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 900;
+        color: #10263f;
+    }
+
+    .factura-info p {
+        margin: 8px 0 0;
+        color: #6b7786;
+        font-weight: 700;
+    }
+
+    .cliente-box {
+        background: #f8fafc;
+        border: 1px solid #e1e7ee;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 26px;
+    }
+
+    .cliente-box h3 {
+        margin: 0 0 14px;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .cliente-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .dato {
+        color: #10263f;
+        font-weight: 800;
+    }
+
+    .dato span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+    }
+
+    .items-table th {
+        text-align: left;
+        padding: 14px 10px;
+        border-bottom: 2px solid #edf0f3;
+        color: #6b7786;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+
+    .items-table td {
+        padding: 14px 10px;
+        border-bottom: 1px solid #edf0f3;
+        font-weight: 700;
+    }
+
+    .items-table td:last-child,
+    .items-table th:last-child {
+        text-align: right;
+    }
+
+    .total-section {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .total-box {
+        width: 320px;
+        background: #10263f;
+        color: white;
+        border-radius: 18px;
+        padding: 22px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        color: #d7e0ea;
+        font-weight: 700;
+    }
+
+    .total-row.final {
+        margin-bottom: 0;
+        color: white;
+        font-size: 24px;
+        font-weight: 900;
+        border-top: 1px solid rgba(255,255,255,0.20);
+        padding-top: 14px;
+    }
+
+    .footer-note {
+        margin-top: 30px;
+        text-align: center;
+        color: #6b7786;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    @media print {
+        body {
+            background: white;
+        }
+
+        .factura-page {
+            padding: 0;
+        }
+
+        .factura-actions {
+            display: none;
+        }
+
+        .factura-card {
+            box-shadow: none;
+            border-radius: 0;
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .factura-page {
+            padding: 20px;
+        }
+
+        .factura-header,
+        .factura-actions {
+            flex-direction: column;
+        }
+
+        .factura-info {
+            text-align: left;
+        }
+
+        .cliente-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .total-box {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="factura-page">
+    <div class="factura-actions">
+        <a class="btn-action" href="/ventas/buscar/">← Volver a pedidos</a>
+        <button class="btn-action" onclick="window.print()">Imprimir factura</button>
+    </div>
+
+    <div class="factura-card">
+        <div class="factura-header">
+            <div class="brand">
+                <h1>DOLCIMOMENTI</h1>
+                <p>Heladería - Cafetería</p>
+                <p>Sistema web de gestión de ventas</p>
+            </div>
+
+            <div class="factura-info">
+                <h2>FACTURA</h2>
+                <p>Pedido #{{ pedido.id }}</p>
+                <p>Fecha: {{ pedido.creado_en }}</p>
+            </div>
+        </div>
+
+        <div class="cliente-box">
+            <h3>Datos del cliente</h3>
+
+            <div class="cliente-grid">
+                <div class="dato">
+                    <span>Cliente</span>
+                    {{ pedido.cliente.nombre if pedido.cliente else 'Cliente ocasional' }}
+                </div>
+
+                <div class="dato">
+                    <span>Teléfono</span>
+                    {{ pedido.cliente.telefono if pedido.cliente and pedido.cliente.telefono else 'No registrado' }}
+                </div>
+
+                <div class="dato">
+                    <span>NIT</span>
+                    {{ pedido.cliente.nit if pedido.cliente and pedido.cliente.nit else 'Sin NIT' }}
+                </div>
+
+                <div class="dato">
+                    <span>Razón social</span>
+                    {{ pedido.cliente.razon_social if pedido.cliente and pedido.cliente.razon_social else pedido.cliente.nombre if pedido.cliente else 'Cliente ocasional' }}
+                </div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in pedido.items %}
+                <tr>
+                    <td>{{ item.producto.nombre if item.producto else 'Producto' }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>{{ item.precio_unitario }} Bs</td>
+                    <td>{{ item.subtotal }} Bs</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <div class="total-box">
+                <div class="total-row">
+                    <span>Método de pago</span>
+                    <span>{{ pago.metodo if pago else 'No registrado' }}</span>
+                </div>
+
+                <div class="total-row">
+                    <span>Estado</span>
+                    <span>{{ pedido.estado }}</span>
+                </div>
+
+                <div class="total-row final">
+                    <span>Total</span>
+                    <span>{{ pedido.total }} Bs</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Gracias por su compra. Este documento fue generado por el sistema DOLCIMOMENTI.
+            <br>
+            Comprobante interno de venta para fines académicos.
+        </div>
+    </div>
+</div>
+{% endblock %}

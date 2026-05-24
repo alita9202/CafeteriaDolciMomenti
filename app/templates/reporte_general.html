@@ -1,369 +1,232 @@
-{% extends "appbuilder/base.html" %} {% block content %}
-<div class="container mt-4">
-  <style>
-    .kpi-card {
-      border-radius: 12px;
-      border: 1px solid #e8e8e8;
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .reporte-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
     }
 
-    .kpi-title {
-      margin: 0;
-      color: #8a8a8a;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+    .reporte-header {
+        margin-bottom: 24px;
     }
 
-    .kpi-value {
-      margin: 8px 0 4px;
-      color: #273043;
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.1;
+    .reporte-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
     }
 
-    .kpi-desc {
-      margin: 0;
-      color: #6f6f6f;
-      font-size: 12px;
+    .reporte-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
     }
 
-    .section-card {
-      border: 1px solid #ebebeb;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      background: #fff;
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
     }
 
-    .section-title {
-      margin: 0 0 12px;
-      color: #2d3748;
-      font-weight: 600;
-      font-size: 18px;
+    .metric-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
     }
 
-    .progress-list-item {
-      margin-bottom: 10px;
+    .metric-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
     }
 
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      color: #4a4a4a;
-      margin-bottom: 4px;
-      font-size: 13px;
+    .metric-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 28px;
+        font-weight: 700;
     }
 
-    .mini-chart-wrap {
-      height: 300px;
-      position: relative;
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
     }
 
-    .badge-soft {
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
+    .panel {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
     }
 
-    .badge-soft-info {
-      background: #e9f4ff;
-      color: #1d6fa5;
+    .panel h2 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
     }
 
-    .badge-soft-success {
-      background: #eaf8ef;
-      color: #2f7a49;
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
     }
 
-    .badge-soft-warning {
-      background: #fff4e5;
-      color: #8f5f0f;
+    .data-row:last-child {
+        border-bottom: none;
     }
-  </style>
 
-  <h2>Reporte 1: Análisis General del Sistema por IA</h2>
-  <p>Resumen general de productos, clientes, pedidos y ventas.</p>
+    .data-row span {
+        color: #6b7786;
+    }
 
-  <div style="margin-bottom: 12px">
-    <button id="btn-recargar-reporte" class="btn btn-primary">
-      Actualizar reporte
-    </button>
-    <span style="margin-left: 8px; color: #666"
-      >Consulta MySQL (PyMySQL) + análisis IA</span
-    >
-  </div>
+    .pill {
+        background: #eef3f7;
+        color: #10263f;
+        border-radius: 6px;
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 700;
+    }
 
-  <div id="estado-carga-reporte" class="alert alert-info" style="display: none">
-    Cargando y procesando datos del reporte...
-  </div>
+    .ai-panel {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 24px;
+    }
 
-  {% if data_error %}
-  <div class="alert alert-danger">
-    <strong>Error en datos:</strong> {{ data_error }}
-  </div>
-  {% endif %}
+    .ai-panel h2 {
+        margin: 0 0 14px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
 
-  <div class="row mt-4">
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Productos</p>
-        <p class="kpi-value">{{ total_productos }}</p>
-        <p class="kpi-desc">Total de productos registrados</p>
-      </div>
+    .ai-content {
+        color: #34495e;
+        font-size: 15px;
+        line-height: 1.8;
+        font-weight: 600;
+        white-space: pre-line;
+        background: #f8fafc;
+        border: 1px solid #edf0f3;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .empty-message {
+        color: #6b7786;
+        background: #fafbfc;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        padding: 20px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    @media (max-width: 1000px) {
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .reporte-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="reporte-page">
+    <div class="reporte-header">
+        <h1>Reporte general IA</h1>
+        <p>Resumen general del funcionamiento comercial de DOLCIMOMENTI con apoyo de inteligencia artificial.</p>
     </div>
 
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Clientes</p>
-        <p class="kpi-value">{{ total_clientes }}</p>
-        <p class="kpi-desc">Total de clientes registrados</p>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Pedidos</p>
-        <p class="kpi-value">{{ total_pedidos }}</p>
-        <p class="kpi-desc">Total de pedidos registrados</p>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="kpi-card">
-        <p class="kpi-title">Total vendido</p>
-        <p class="kpi-value">{{ total_vendido }} Bs</p>
-        <p class="kpi-desc">Ventas confirmadas por pagos</p>
-      </div>
-    </div>
-  </div>
-
-  <hr />
-
-  <div class="row">
-    <div class="col-md-6">
-      <div class="section-card">
-        <h3 class="section-title">Pedidos por estado</h3>
-        <div class="mini-chart-wrap">
-          <canvas id="chartEstados"></canvas>
+    <section class="metrics-grid">
+        <div class="metric-card">
+            <span>Productos</span>
+            <strong>{{ total_productos | default(0) }}</strong>
         </div>
-        <hr />
-        <div id="estadoProgressContainer"></div>
-      </div>
-    </div>
 
-    <div class="col-md-6">
-      <div class="section-card">
-        <h3 class="section-title">Productos más vendidos</h3>
-        <div class="mini-chart-wrap">
-          <canvas id="chartProductos"></canvas>
+        <div class="metric-card">
+            <span>Clientes</span>
+            <strong>{{ total_clientes | default(0) }}</strong>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="section-card">
-    <h3 class="section-title">Detalle tabular</h3>
-    <div class="row">
-      <div class="col-md-6">
-        <h4 style="margin-top: 0">Estados de pedidos</h4>
-        <table class="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>Estado</th>
-              <th>Cantidad de pedidos</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for estado, cantidad in pedidos_por_estado %}
-            <tr>
-              <td>{{ estado }}</td>
-              <td>{{ cantidad }}</td>
-            </tr>
+        <div class="metric-card">
+            <span>Pedidos</span>
+            <strong>{{ total_pedidos | default(0) }}</strong>
+        </div>
+
+        <div class="metric-card">
+            <span>Total vendido</span>
+            <strong>{{ total_vendido | default(0) }} Bs</strong>
+        </div>
+    </section>
+
+    <section class="content-grid">
+        <div class="panel">
+            <h2>Productos más vendidos</h2>
+
+            {% for producto, cantidad in productos_mas_vendidos | default([]) %}
+            <div class="data-row">
+                <span>{{ producto }}</span>
+                <strong class="pill">{{ cantidad }}</strong>
+            </div>
             {% else %}
-            <tr>
-              <td colspan="2">No existen pedidos registrados.</td>
-            </tr>
+            <div class="empty-message">
+                No existen ventas registradas para mostrar productos destacados.
+            </div>
             {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <div class="col-md-6">
-        <h4 style="margin-top: 0">Ranking de productos</h4>
-        <table class="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Cantidad vendida</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for producto, cantidad in productos_mas_vendidos %}
-            <tr>
-              <td>{{ producto }}</td>
-              <td>{{ cantidad }}</td>
-            </tr>
+        </div>
+
+        <div class="panel">
+            <h2>Pedidos por estado</h2>
+
+            {% for estado, cantidad in pedidos_por_estado | default([]) %}
+            <div class="data-row">
+                <span>{{ estado }}</span>
+                <strong class="pill">{{ cantidad }}</strong>
+            </div>
             {% else %}
-            <tr>
-              <td colspan="2">No existen productos vendidos.</td>
-            </tr>
+            <div class="empty-message">
+                No existen pedidos registrados para clasificar por estado.
+            </div>
             {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+        </div>
+    </section>
 
-  <hr />
+    <section class="ai-panel">
+        <h2>Análisis inteligente</h2>
 
-  <h3>Análisis automático por IA</h3>
-  {% if ai_analisis %}
-  <div class="panel panel-success">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-success">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body" style="white-space: pre-line">
-      {{ ai_analisis }}
-    </div>
-  </div>
-  {% elif ai_error %}
-  <div class="panel panel-warning">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-warning">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body">{{ ai_error }}</div>
-  </div>
-  {% else %}
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      Estado IA:
-      <span class="badge-soft badge-soft-info">{{ ai_estado }}</span>
-    </div>
-    <div class="panel-body">No hay análisis disponible todavía.</div>
-  </div>
-  {% endif %}
+        <div class="ai-content">
+            {{ ai_analisis | default("El análisis inteligente se mostrará aquí cuando existan datos suficientes y el servicio de IA responda correctamente.") }}
+        </div>
+    </section>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-  (function () {
-    const btnRecargar = document.getElementById("btn-recargar-reporte");
-    const estadoCarga = document.getElementById("estado-carga-reporte");
-
-    function mostrarCarga() {
-      if (estadoCarga) {
-        estadoCarga.style.display = "block";
-      }
-      if (btnRecargar) {
-        btnRecargar.disabled = true;
-      }
-    }
-
-    if (btnRecargar) {
-      btnRecargar.addEventListener("click", function () {
-        mostrarCarga();
-        window.location.href = "/reporte-general/";
-      });
-    }
-
-    const pedidosPorEstado = {{ pedidos_por_estado | tojson }} || [];
-    const productosMasVendidos = {{ productos_mas_vendidos | tojson }} || [];
-
-    const labelsEstado = pedidosPorEstado.map((row) => String(row[0] || "sin estado").toUpperCase());
-    const valuesEstado = pedidosPorEstado.map((row) => Number(row[1] || 0));
-    const labelsProductos = productosMasVendidos.map((row) => String(row[0] || "Sin nombre"));
-    const valuesProductos = productosMasVendidos.map((row) => Number(row[1] || 0));
-
-    const totalEstados = valuesEstado.reduce((acc, value) => acc + value, 0) || 1;
-    const estadoProgressContainer = document.getElementById("estadoProgressContainer");
-
-    if (estadoProgressContainer) {
-      if (!labelsEstado.length) {
-        estadoProgressContainer.innerHTML = "<p style='color:#777'>Sin datos de estados para mostrar porcentaje.</p>";
-      } else {
-        estadoProgressContainer.innerHTML = labelsEstado
-          .map((label, idx) => {
-            const value = valuesEstado[idx];
-            const pct = ((value / totalEstados) * 100).toFixed(1);
-            return `
-              <div class="progress-list-item">
-                <div class="progress-label">
-                  <span>${label}</span>
-                  <span>${value} pedidos (${pct}%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar progress-bar-info" role="progressbar" style="width:${pct}%"></div>
-                </div>
-              </div>
-            `;
-          })
-          .join("");
-      }
-    }
-
-    const ctxEstados = document.getElementById("chartEstados");
-    if (ctxEstados && labelsEstado.length) {
-      new Chart(ctxEstados, {
-        type: "doughnut",
-        data: {
-          labels: labelsEstado,
-          datasets: [
-            {
-              data: valuesEstado,
-              backgroundColor: ["#3B82F6", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6", "#14B8A6"],
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "bottom" },
-          },
-        },
-      });
-    }
-
-    const ctxProductos = document.getElementById("chartProductos");
-    if (ctxProductos && labelsProductos.length) {
-      new Chart(ctxProductos, {
-        type: "bar",
-        data: {
-          labels: labelsProductos,
-          datasets: [
-            {
-              label: "Cantidad vendida",
-              data: valuesProductos,
-              backgroundColor: "#2563EB",
-              borderRadius: 8,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 },
-            },
-          },
-        },
-      });
-    }
-  })();
-</script>
-
 {% endblock %}

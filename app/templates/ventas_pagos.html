@@ -1,0 +1,253 @@
+{% extends "admin_layout.html" %}
+
+{% block page_content %}
+<style>
+    .pagos-page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 40px;
+    }
+
+    .pagos-header {
+        margin-bottom: 24px;
+    }
+
+    .pagos-header h1 {
+        margin: 0 0 6px;
+        color: #10263f;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .pagos-header p {
+        margin: 0;
+        color: #5f6e7c;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .summary-card span {
+        display: block;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+        display: block;
+        color: #10263f;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    .pagos-card {
+        background: #ffffff;
+        border: 1px solid #e0e4ea;
+        border-radius: 10px;
+        padding: 22px;
+    }
+
+    .pagos-card h2 {
+        margin: 0 0 18px;
+        color: #10263f;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .pagos-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .pagos-table th {
+        text-align: left;
+        color: #6b7786;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 14px 12px;
+        border-bottom: 1px solid #e7ebef;
+    }
+
+    .pagos-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #edf0f3;
+        color: #10263f;
+        font-weight: 600;
+        vertical-align: middle;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef3f7;
+        color: #10263f;
+    }
+
+    .pill-ok {
+        background: #e8f6ef;
+        color: #247a4b;
+    }
+
+    .pill-method {
+        background: #eef3f7;
+        color: #10263f;
+        text-transform: capitalize;
+    }
+
+    .btn-factura {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #10263f;
+        color: #ffffff;
+        padding: 8px 11px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .btn-factura:hover {
+        background: #173553;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .empty-message {
+        padding: 28px;
+        border: 1px dashed #dfe5ec;
+        border-radius: 10px;
+        color: #6b7786;
+        font-weight: 600;
+        text-align: center;
+        background: #fafbfc;
+    }
+
+    @media (max-width: 900px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pagos-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .pagos-header h1 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+{% set total_pagos = pagos | length %}
+{% set total_monto = namespace(valor=0) %}
+{% set pagos_efectivo = namespace(valor=0) %}
+
+{% for pago in pagos %}
+    {% set total_monto.valor = total_monto.valor + (pago.monto or 0) %}
+    {% if pago.metodo == "efectivo" %}
+        {% set pagos_efectivo.valor = pagos_efectivo.valor + 1 %}
+    {% endif %}
+{% endfor %}
+
+<div class="pagos-page">
+    <div class="pagos-header">
+        <h1>Historial de pagos</h1>
+        <p>Consulta los pagos confirmados en el sistema y su relación con pedidos, clientes y facturación.</p>
+    </div>
+
+    <section class="summary-grid">
+        <div class="summary-card">
+            <span>Pagos registrados</span>
+            <strong>{{ total_pagos }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Monto registrado</span>
+            <strong>{{ "%.2f"|format(total_monto.valor) }} Bs</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Pagos en efectivo</span>
+            <strong>{{ pagos_efectivo.valor }}</strong>
+        </div>
+    </section>
+
+    <section class="pagos-card">
+        <h2>Últimos pagos</h2>
+
+        {% if pagos %}
+        <table class="pagos-table">
+            <thead>
+                <tr>
+                    <th>Pago</th>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Monto</th>
+                    <th>Método</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Factura</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pago in pagos %}
+                <tr>
+                    <td>#{{ pago.id }}</td>
+                    <td>#{{ pago.pedido.id if pago.pedido else '-' }}</td>
+                    <td>
+                        {% if pago.pedido and pago.pedido.cliente %}
+                            {{ pago.pedido.cliente.nombre }}
+                        {% else %}
+                            Cliente no registrado
+                        {% endif %}
+                    </td>
+                    <td>{{ pago.monto }} Bs</td>
+                    <td><span class="pill pill-method">{{ pago.metodo }}</span></td>
+                    <td><span class="pill pill-ok">{{ pago.estado }}</span></td>
+                    <td>{{ pago.fecha }}</td>
+                    <td>
+                        {% if pago.pedido and pago.pedido.cliente and pago.pedido.cliente.requiere_factura %}
+                            <a class="btn-factura" href="/factura/pedido/{{ pago.pedido.id }}/">
+                                <i class="bi bi-printer"></i> Imprimir
+                            </a>
+                        {% else %}
+                            <span class="pill">No requerida</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-message">
+            Todavía no existen pagos registrados. Los pagos aparecerán aquí después de confirmar pedidos pendientes.
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
