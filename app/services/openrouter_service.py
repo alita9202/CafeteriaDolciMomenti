@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from urllib import response
 
 from flask import current_app
 
@@ -87,7 +88,22 @@ class OpenRouterService:
             raise AIServiceError(f"Error de comunicacion con OpenRouter: {exc}") from exc
 
         try:
-            return response["choices"][0]["message"]["content"].strip()
+            try:
+                 content = response["choices"][0]["message"].get("content")
+
+                 if not content:
+                    return (
+                        "No se recibió una respuesta completa de la IA en este momento. "
+                        "Se recomienda volver a intentar o revisar el modelo configurado en OpenRouter."
+                    )
+                 return content.strip()
+
+            except Exception as error:
+                return (
+                    "No se pudo generar el análisis automático con IA. "
+                    f"Detalle técnico: {error}"
+                )
+            
         except (KeyError, IndexError, TypeError) as exc:
             raise AIServiceError("Respuesta invalida de OpenRouter.") from exc
 
